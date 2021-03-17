@@ -22,12 +22,17 @@ namespace Valheim_Serverside
 			Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), null);
 		}
 
+		public static bool IsServer()
+        {
+			return ZNet.instance && ZNet.instance.IsServer();
+        }
+
 		[HarmonyPatch(typeof(ZNetScene), "CreateDestroyObjects")]
 		private class CreateDestroyObjects_Patch
 		{
 			private static bool Prefix(ZNetScene __instance)
 			{
-				if (!ZNet.instance || !ZNet.instance.IsServer())
+				if (!IsServer())
 				{
 					return true;
 				}
