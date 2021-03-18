@@ -62,6 +62,34 @@ namespace Valheim_Serverside
 			}
 		}
 
+		[HarmonyPatch(typeof(ZoneSystem), "Update")]
+		static class ZoneSystem_Update_Patch
+		{
+			static bool Prefix(ZoneSystem __instance, float ___m_updateTimer)
+			{
+				if (ZNet.GetConnectionStatus() != ZNet.ConnectionStatus.Connected)
+				{
+					return false;
+				}
+				___m_updateTimer += Time.deltaTime;
+				if (Traverse.Create(__instance).Field("m_updateTimer").GetValue<float>() > 0.1f)
+				{
+					Traverse.Create(__instance).Field("m_updateTimer").SetValue(0f);
+					bool flag = Traverse.Create(__instance).Method("CreateLocalZones", ZNet.instance.GetReferencePosition()).GetValue<bool>();
+					Traverse.Create(__instance).Method("UpdateTTL", 0.1f).GetValue();
+					if (ZNet.instance.IsServer() && !flag)
+					{
+						Traverse.Create(__instance).Method("CreateGhostZones", ZNet.instance.GetReferencePosition()).GetValue();
+						foreach (ZNetPeer znetPeer in ZNet.instance.GetPeers())
+						{
+							Traverse.Create(__instance).Method("CreateGhostZones", znetPeer.GetRefPos()).GetValue();
+						}
+					}
+				}
+				return false;
+			}
+		}
+
 		[HarmonyPatch(typeof(ZoneSystem), "CreateGhostZones")]
 		static class ZoneSystem_CreateGhostZones_Patch
 		{
