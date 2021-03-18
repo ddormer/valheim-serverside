@@ -75,14 +75,15 @@ namespace Valheim_Serverside
 				if (Traverse.Create(__instance).Field("m_updateTimer").GetValue<float>() > 0.1f)
 				{
 					Traverse.Create(__instance).Field("m_updateTimer").SetValue(0f);
+					// flag line can probably be removed, as well as the check for it.
 					bool flag = Traverse.Create(__instance).Method("CreateLocalZones", ZNet.instance.GetReferencePosition()).GetValue<bool>();
 					Traverse.Create(__instance).Method("UpdateTTL", 0.1f).GetValue();
 					if (ZNet.instance.IsServer() && !flag)
 					{
-						Traverse.Create(__instance).Method("CreateGhostZones", ZNet.instance.GetReferencePosition()).GetValue();
+						//Traverse.Create(__instance).Method("CreateGhostZones", ZNet.instance.GetReferencePosition()).GetValue();
 						foreach (ZNetPeer znetPeer in ZNet.instance.GetPeers())
 						{
-							Traverse.Create(__instance).Method("CreateGhostZones", znetPeer.GetRefPos()).GetValue();
+							Traverse.Create(__instance).Method("CreateLocalZones", znetPeer.GetRefPos()).GetValue();
 						}
 					}
 				}
