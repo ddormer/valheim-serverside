@@ -81,27 +81,13 @@ namespace Valheim_Serverside
 					if (ZNet.instance.IsServer() && !flag)
 					{
 						//Traverse.Create(__instance).Method("CreateGhostZones", ZNet.instance.GetReferencePosition()).GetValue();
+						//UnityEngine.Debug.Log(String.Concat(new object[] { "CreateLocalZones for", refPoint.x, " ", refPoint.y, " ", refPoint.z }));
 						foreach (ZNetPeer znetPeer in ZNet.instance.GetPeers())
 						{
 							Traverse.Create(__instance).Method("CreateLocalZones", znetPeer.GetRefPos()).GetValue();
 						}
 					}
 				}
-				return false;
-			}
-		}
-
-		[HarmonyPatch(typeof(ZoneSystem), "CreateGhostZones")]
-		static class ZoneSystem_CreateGhostZones_Patch
-		{
-			static bool Prefix(ZoneSystem __instance, ref Vector3 refPoint)
-			{
-				//UnityEngine.Debug.Log(String.Concat(new object[] { "CreateLocalZones for", refPoint.x, " ", refPoint.y, " ", refPoint.z }));
-				bool flag = Traverse.Create(__instance).Method("CreateLocalZones", new object[] { refPoint }).GetValue<bool>();
-				if (!flag)
-                {
-					return true;
-                }
 				return false;
 			}
 		}
