@@ -65,17 +65,14 @@ namespace Valheim_Serverside
 		[HarmonyPatch(typeof(ZoneSystem), "CreateGhostZones")]
 		static class ZoneSystem_CreateGhostZones_Patch
 		{
-			static void Postfix(ZoneSystem __instance, ref Vector3 refPoint)
+			static bool Prefix(ZoneSystem __instance, ref Vector3 refPoint)
 			{
-				Traverse.Create(__instance).Method("CreateLocalZones", new object[] { refPoint }).GetValue();
-			}
-		}
-
-		//[HarmonyPatch(typeof(ZDOMan), "ReleaseZDOS")]
-		static class ZDOMan_ReleaseZDOS_Patch
-		{
-			static bool Prefix()
-			{
+				//UnityEngine.Debug.Log(String.Concat(new object[] { "CreateLocalZones for", refPoint.x, " ", refPoint.y, " ", refPoint.z }));
+				bool flag = Traverse.Create(__instance).Method("CreateLocalZones", new object[] { refPoint }).GetValue<bool>();
+				if (!flag)
+                {
+					return true;
+                }
 				return false;
 			}
 		}
@@ -83,7 +80,7 @@ namespace Valheim_Serverside
 		[HarmonyPatch(typeof(ZDOMan), "ReleaseNearbyZDOS")]
 		static class ZDOMan_ReleaseNearbyZDOS_Patch
         {
-            static void Prefix(ZDOMan __instance, ref Vector3 refPosition, ref long uid)
+            static bool Prefix(ZDOMan __instance, ref Vector3 refPosition, ref long uid)
             {
                 Vector2i zone = ZoneSystem.instance.GetZone(refPosition);
 				List<ZDO> m_tempNearObjects = Traverse.Create(__instance).Field("m_tempNearObjects").GetValue<List<ZDO>>();
@@ -103,10 +100,11 @@ namespace Valheim_Serverside
                         }
                         else if ((zdo.m_owner == 0L || !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.m_owner }).GetValue<bool>()) && ZNetScene.instance.InActiveArea(zdo.GetSector(), zone))
                         {
-                            zdo.SetOwner(uid);
-                        }
+							zdo.SetOwner(ZNet.instance.GetUID());
+						}
                     }
                 }
+				return false;
             }
         }
 
