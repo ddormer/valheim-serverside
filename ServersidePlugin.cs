@@ -45,12 +45,12 @@ namespace Valheim_Serverside
 				}
 
 				Traverse.Create(__instance).Method("CreateObjects", m_tempCurrentObjects, m_tempCurrentDistantObjects).GetValue();
-				Traverse.Create(__instance).Method("RemoveObjects", m_tempCurrentObjects, m_tempCurrentDistantObjects).GetValue();
+				//Traverse.Create(__instance).Method("RemoveObjects", m_tempCurrentObjects, m_tempCurrentDistantObjects).GetValue();
 				return false;
 			}
 		}
 
-		[HarmonyPatch(typeof(ZNetScene), "CreateObject")]
+		//[HarmonyPatch(typeof(ZNetScene), "CreateObject")]
 		static class ZNetScene_CreateObject_Patch
 		{
 			static void Prefix(ref ZDO zdo)
@@ -71,7 +71,7 @@ namespace Valheim_Serverside
 			}
 		}
 
-		[HarmonyPatch(typeof(ZDOMan), "ReleaseZDOS")]
+		//[HarmonyPatch(typeof(ZDOMan), "ReleaseZDOS")]
 		static class ZDOMan_ReleaseZDOS_Patch
 		{
 			static bool Prefix()
@@ -79,6 +79,36 @@ namespace Valheim_Serverside
 				return false;
 			}
 		}
+
+		[HarmonyPatch(typeof(ZDOMan), "ReleaseNearbyZDOS")]
+		static class ZDOMan_ReleaseNearbyZDOS_Patch
+        {
+            static void Prefix(ZDOMan __instance, ref Vector3 refPosition, ref long uid)
+            {
+                Vector2i zone = ZoneSystem.instance.GetZone(refPosition);
+				List<ZDO> m_tempNearObjects = Traverse.Create(__instance).Field("m_tempNearObjects").GetValue<List<ZDO>>();
+				m_tempNearObjects.Clear();
+
+                __instance.FindSectorObjects(zone, ZoneSystem.instance.m_activeArea, 0, m_tempNearObjects, null);
+                foreach (ZDO zdo in m_tempNearObjects)
+                {
+                    if (zdo.m_persistent)
+                    {
+                        if (zdo.m_owner == uid || zdo.m_owner == ZNet.instance.GetUID())
+                        {
+                            if (!ZNetScene.instance.InActiveArea(zdo.GetSector(), zone))
+                            {
+                                zdo.SetOwner(0L);
+                            }
+                        }
+                        else if ((zdo.m_owner == 0L || !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.m_owner }).GetValue<bool>()) && ZNetScene.instance.InActiveArea(zdo.GetSector(), zone))
+                        {
+                            zdo.SetOwner(uid);
+                        }
+                    }
+                }
+            }
+        }
 
 		[HarmonyPatch(typeof(ZNet), "SendPeriodicData")]
 		static class ZNet_SendPeriodicData_Patch
