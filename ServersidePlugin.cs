@@ -119,7 +119,6 @@ namespace Valheim_Serverside
                 {
                     if (zdo.m_persistent)
                     {
-                        if (zdo.m_owner == uid || zdo.m_owner == ZNet.instance.GetUID())
 						List<bool> in_area = new List<bool>();
 						foreach (ZNetPeer peer in ZNet.instance.GetPeers())
 						{
