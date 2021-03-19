@@ -38,7 +38,7 @@ namespace Valheim_Serverside
 
 		[HarmonyPatch(typeof(ZNetScene), "OutsideActiveArea", new Type[] { typeof(Vector3) })]
 		private class ZNetScene_OutsideActiveArea_Patch
-        {
+		{
 			static bool Prefix(ref bool __result, ZNetScene __instance, Vector3 point)
 			{
 				__result = true;
@@ -47,11 +47,11 @@ namespace Valheim_Serverside
 					if (!__instance.OutsideActiveArea(point, ZNet.instance.GetReferencePosition()))
 					{
 						__result = false;
-                    }
+					}
 				}
-				return true;
+					return true;
 			}
-        }
+		}
 
 
 		[HarmonyPatch(typeof(ZNetScene), "CreateDestroyObjects")]
@@ -113,40 +113,40 @@ namespace Valheim_Serverside
 
 		[HarmonyPatch(typeof(ZDOMan), "ReleaseNearbyZDOS")]
 		static class ZDOMan_ReleaseNearbyZDOS_Patch
-        {
-            static bool Prefix(ZDOMan __instance, ref Vector3 refPosition, ref long uid)
-            {
-                Vector2i zone = ZoneSystem.instance.GetZone(refPosition);
+		{
+			static bool Prefix(ZDOMan __instance, ref Vector3 refPosition, ref long uid)
+			{
+				Vector2i zone = ZoneSystem.instance.GetZone(refPosition);
 				List<ZDO> m_tempNearObjects = Traverse.Create(__instance).Field("m_tempNearObjects").GetValue<List<ZDO>>();
 				m_tempNearObjects.Clear();
 
-                __instance.FindSectorObjects(zone, ZoneSystem.instance.m_activeArea, 0, m_tempNearObjects, null);
-                foreach (ZDO zdo in m_tempNearObjects)
-                {
-                    if (zdo.m_persistent)
-                    {
+				__instance.FindSectorObjects(zone, ZoneSystem.instance.m_activeArea, 0, m_tempNearObjects, null);
+				foreach (ZDO zdo in m_tempNearObjects)
+				{
+					if (zdo.m_persistent)
+					{
 						List<bool> in_area = new List<bool>();
 						foreach (ZNetPeer peer in ZNet.instance.GetPeers())
 						{
 							in_area.Add(ZNetScene.instance.InActiveArea(zdo.GetSector(), ZoneSystem.instance.GetZone(peer.GetRefPos())));
 						}
 						if (zdo.m_owner == uid || zdo.m_owner == ZNet.instance.GetUID())
-                        {
-                            if (!in_area.Contains(true))
-                            {
-                                zdo.SetOwner(0L);
-                            }
-                        }
+						{
+							if (!in_area.Contains(true))
+							{
+								zdo.SetOwner(0L);
+							}
+						}
 
-                        else if ((zdo.m_owner == 0L || !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.m_owner }).GetValue<bool>())
+						else if ((zdo.m_owner == 0L || !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.m_owner }).GetValue<bool>())
 								 && in_area.Contains(true))
-                        {
+						{
 							zdo.SetOwner(ZNet.instance.GetUID());
 						}
-                    }
-                }
+					}
+				}
 				return false;
-            }
-        }
+			}
+		}
 	}
 }
