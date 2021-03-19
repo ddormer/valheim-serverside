@@ -79,6 +79,18 @@ namespace Valheim_Serverside
 			}
 		}
 
+        [HarmonyPatch(typeof(ZNetScene), "CreateObject")]
+        static class ZNetScene_CreateObject_Patch
+		{
+			static void Prefix(ref ZDO zdo)
+			{
+				if (ZNetScene.instance.GetPrefab(zdo.GetPrefab()) != Game.instance.m_playerPrefab && zdo.m_owner != ZNet.instance.GetUID())
+				{
+					zdo.SetOwner(ZNet.instance.GetUID());
+				}
+			}
+		}
+
 		[HarmonyPatch(typeof(ZoneSystem), "Update")]
 		static class ZoneSystem_Update_Patch
 		{
