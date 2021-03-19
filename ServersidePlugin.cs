@@ -56,7 +56,7 @@ namespace Valheim_Serverside
 				m_tempCurrentDistantObjects = m_tempCurrentDistantObjects.Distinct().ToList();
 				m_tempCurrentObjects = m_tempCurrentObjects.Distinct().ToList();
 				Traverse.Create(__instance).Method("CreateObjects", m_tempCurrentObjects, m_tempCurrentDistantObjects).GetValue();
-				//Traverse.Create(__instance).Method("RemoveObjects", m_tempCurrentObjects, m_tempCurrentDistantObjects).GetValue();
+				Traverse.Create(__instance).Method("RemoveObjects", m_tempCurrentObjects, m_tempCurrentDistantObjects).GetValue();
 				return false;
 			}
 		}
