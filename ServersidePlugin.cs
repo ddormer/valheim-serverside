@@ -23,18 +23,36 @@ namespace Valheim_Serverside
 		}
 
 		public static bool IsServer()
-        {
+		{
 			return ZNet.instance && ZNet.instance.IsServer();
-        }
+		}
 
 		public static void PrintLog(string text)
-        {
+		{
 			System.Diagnostics.Trace.WriteLine(text);
-        }
+		}
 		public static void PrintLog(object[] obj)
 		{
 			System.Diagnostics.Trace.WriteLine(string.Concat(obj));
 		}
+
+		[HarmonyPatch(typeof(ZNetScene), "OutsideActiveArea", new Type[] { typeof(Vector3) })]
+		private class ZNetScene_OutsideActiveArea_Patch
+		{
+			static bool Prefix(ref bool __result, ZNetScene __instance, Vector3 point)
+			{
+				__result = true;
+				foreach (ZNetPeer znetPeer in ZNet.instance.GetPeers())
+				{
+					if (!__instance.OutsideActiveArea(point, znetPeer.GetRefPos()))
+					{
+						__result = false;
+					}
+				}
+				return false;
+			}
+		}
+
 
 		[HarmonyPatch(typeof(ZNetScene), "CreateDestroyObjects")]
 		private class CreateDestroyObjects_Patch
@@ -95,40 +113,40 @@ namespace Valheim_Serverside
 
 		[HarmonyPatch(typeof(ZDOMan), "ReleaseNearbyZDOS")]
 		static class ZDOMan_ReleaseNearbyZDOS_Patch
-        {
-            static bool Prefix(ZDOMan __instance, ref Vector3 refPosition, ref long uid)
-            {
-                Vector2i zone = ZoneSystem.instance.GetZone(refPosition);
+		{
+			static bool Prefix(ZDOMan __instance, ref Vector3 refPosition, ref long uid)
+			{
+				Vector2i zone = ZoneSystem.instance.GetZone(refPosition);
 				List<ZDO> m_tempNearObjects = Traverse.Create(__instance).Field("m_tempNearObjects").GetValue<List<ZDO>>();
 				m_tempNearObjects.Clear();
 
-                __instance.FindSectorObjects(zone, ZoneSystem.instance.m_activeArea, 0, m_tempNearObjects, null);
-                foreach (ZDO zdo in m_tempNearObjects)
-                {
-                    if (zdo.m_persistent)
-                    {
+				__instance.FindSectorObjects(zone, ZoneSystem.instance.m_activeArea, 0, m_tempNearObjects, null);
+				foreach (ZDO zdo in m_tempNearObjects)
+				{
+					if (zdo.m_persistent)
+					{
 						List<bool> in_area = new List<bool>();
 						foreach (ZNetPeer peer in ZNet.instance.GetPeers())
 						{
 							in_area.Add(ZNetScene.instance.InActiveArea(zdo.GetSector(), ZoneSystem.instance.GetZone(peer.GetRefPos())));
 						}
 						if (zdo.m_owner == uid || zdo.m_owner == ZNet.instance.GetUID())
-                        {
-                            if (!in_area.Contains(true))
-                            {
-                                zdo.SetOwner(0L);
-                            }
-                        }
+						{
+							if (!in_area.Contains(true))
+							{
+								zdo.SetOwner(0L);
+							}
+						}
 
-                        else if ((zdo.m_owner == 0L || !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.m_owner }).GetValue<bool>())
+						else if ((zdo.m_owner == 0L || !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.m_owner }).GetValue<bool>())
 								 && in_area.Contains(true))
-                        {
+						{
 							zdo.SetOwner(ZNet.instance.GetUID());
 						}
-                    }
-                }
+					}
+				}
 				return false;
-            }
-        }
+			}
+		}
 	}
 }
