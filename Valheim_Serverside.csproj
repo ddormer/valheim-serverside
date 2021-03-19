@@ -74,9 +74,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>call "G:\SteamLibrary\steamapps\common\Valheim dedicated server\kill_server.bat"
-copy /v $(TargetPath) "G:\SteamLibrary\steamapps\common\Valheim dedicated server\BepInEx\plugins\"
-start steam://rungameid/896660</PostBuildEvent>
+    <PostBuildEvent>set SCRIPT=$(SolutionDir)\bin\post_build.bat
+IF EXIST %25SCRIPT%25 CALL %25SCRIPT%25 $(TargetPath)</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>
