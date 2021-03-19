@@ -49,7 +49,7 @@ namespace Valheim_Serverside
 						__result = false;
 					}
 				}
-			return false;
+				return false;
 			}
 		}
 
