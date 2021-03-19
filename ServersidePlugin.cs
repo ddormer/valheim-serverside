@@ -23,18 +23,36 @@ namespace Valheim_Serverside
 		}
 
 		public static bool IsServer()
-        {
+		{
 			return ZNet.instance && ZNet.instance.IsServer();
-        }
+		}
 
 		public static void PrintLog(string text)
-        {
+		{
 			System.Diagnostics.Trace.WriteLine(text);
-        }
+		}
 		public static void PrintLog(object[] obj)
 		{
 			System.Diagnostics.Trace.WriteLine(string.Concat(obj));
 		}
+
+		[HarmonyPatch(typeof(ZNetScene), "OutsideActiveArea", new Type[] { typeof(Vector3) })]
+		private class ZNetScene_OutsideActiveArea_Patch
+        {
+			static bool Prefix(ref bool __result, ZNetScene __instance, Vector3 point)
+			{
+				__result = true;
+				foreach (ZNetPeer znetPeer in ZNet.instance.GetPeers())
+				{
+					if (!__instance.OutsideActiveArea(point, ZNet.instance.GetReferencePosition()))
+					{
+						__result = false;
+                    }
+				}
+				return true;
+			}
+        }
+
 
 		[HarmonyPatch(typeof(ZNetScene), "CreateDestroyObjects")]
 		private class CreateDestroyObjects_Patch
