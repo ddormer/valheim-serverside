@@ -44,12 +44,12 @@ namespace Valheim_Serverside
 				__result = true;
 				foreach (ZNetPeer znetPeer in ZNet.instance.GetPeers())
 				{
-					if (!__instance.OutsideActiveArea(point, ZNet.instance.GetReferencePosition()))
+					if (!__instance.OutsideActiveArea(point, znetPeer.GetRefPos()))
 					{
 						__result = false;
 					}
 				}
-					return true;
+			return false;
 			}
 		}
 
