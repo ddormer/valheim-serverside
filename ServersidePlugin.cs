@@ -61,18 +61,6 @@ namespace Valheim_Serverside
 			}
 		}
 
-		//[HarmonyPatch(typeof(ZNetScene), "CreateObject")]
-		static class ZNetScene_CreateObject_Patch
-		{
-			static void Prefix(ref ZDO zdo)
-			{
-				if (ZNetScene.instance.GetPrefab(zdo.GetPrefab()) != Game.instance.m_playerPrefab && zdo.m_owner != ZNet.instance.GetUID())
-				{
-					zdo.SetOwner(ZNet.instance.GetUID());
-				}
-			}
-		}
-
 		[HarmonyPatch(typeof(ZoneSystem), "Update")]
 		static class ZoneSystem_Update_Patch
 		{
@@ -142,50 +130,5 @@ namespace Valheim_Serverside
 				return false;
             }
         }
-
-		[HarmonyPatch(typeof(ZNet), "SendPeriodicData")]
-		static class ZNet_SendPeriodicData_Patch
-		{
-			static bool Prefix(ZNet __instance, ref float dt)
-			{
-				Traverse m_periodicSendTimer = Traverse.Create(__instance).Field("m_periodicSendTimer");
-				m_periodicSendTimer.SetValue(m_periodicSendTimer.GetValue<float>() + dt);
-				if (m_periodicSendTimer.GetValue<float>() >= 2f)
-				{
-					m_periodicSendTimer.SetValue(0f);
-					if (__instance.IsServer())
-					{
-						Traverse.Create(__instance).Method("SendNetTime").GetValue();
-						Traverse.Create(__instance).Method("SendPlayerList").GetValue();
-
-						// Spoof location of server to clients so that they don't try to release server-owned ZDOs
-						foreach (ZNetPeer znetPeer in __instance.GetPeers())
-						{
-							if (znetPeer.IsReady())
-							{
-								znetPeer.m_rpc.Invoke("RefPos", new object[]
-								{
-								znetPeer.m_refPos,
-								false
-								});
-							}
-						}
-						return false;
-					}
-					foreach (ZNetPeer znetPeer in __instance.GetPeers())
-					{
-						if (znetPeer.IsReady())
-						{
-							znetPeer.m_rpc.Invoke("RefPos", new object[]
-							{
-								__instance.GetReferencePosition(),
-								false
-							});
-						}
-					}
-				}
-				return false;
-			}
-		}
 	}
 }
