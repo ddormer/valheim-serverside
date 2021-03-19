@@ -27,6 +27,15 @@ namespace Valheim_Serverside
 			return ZNet.instance && ZNet.instance.IsServer();
         }
 
+		public static void PrintLog(string text)
+        {
+			System.Diagnostics.Trace.WriteLine(text);
+        }
+		public static void PrintLog(object[] obj)
+		{
+			System.Diagnostics.Trace.WriteLine(string.Concat(obj));
+		}
+
 		[HarmonyPatch(typeof(ZNetScene), "CreateDestroyObjects")]
 		private class CreateDestroyObjects_Patch
 		{
