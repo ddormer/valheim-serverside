@@ -120,13 +120,21 @@ namespace Valheim_Serverside
                     if (zdo.m_persistent)
                     {
                         if (zdo.m_owner == uid || zdo.m_owner == ZNet.instance.GetUID())
+						List<bool> in_area = new List<bool>();
+						foreach (ZNetPeer peer in ZNet.instance.GetPeers())
+						{
+							in_area.Add(ZNetScene.instance.InActiveArea(zdo.GetSector(), ZoneSystem.instance.GetZone(peer.GetRefPos())));
+						}
+						if (zdo.m_owner == uid || zdo.m_owner == ZNet.instance.GetUID())
                         {
-                            if (!ZNetScene.instance.InActiveArea(zdo.GetSector(), zone))
+                            if (!in_area.Contains(true))
                             {
                                 zdo.SetOwner(0L);
                             }
                         }
-                        else if ((zdo.m_owner == 0L || !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.m_owner }).GetValue<bool>()) && ZNetScene.instance.InActiveArea(zdo.GetSector(), zone))
+
+                        else if ((zdo.m_owner == 0L || !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.m_owner }).GetValue<bool>())
+								 && in_area.Contains(true))
                         {
 							zdo.SetOwner(ZNet.instance.GetUID());
 						}
