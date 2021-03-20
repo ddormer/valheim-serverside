@@ -58,9 +58,9 @@ namespace Valheim_Serverside
 		private class ZNetScene_OutsideActiveArea_Patch
 		/*
 			Originally uses `ZNet.GetReferencePosition` to determine active area but with the server 
-			handling all areas, it must check if the `Vector3` is within any of the peer's active areas.
+			handling all areas, it must check if the `Vector3` is within any of the peers' active areas.
 
-			Returns `false` if the point is within *any* of the peer's active areas and `false` otherwise.
+			Returns `false` if the point is within *any* of the peers' active areas and `false` otherwise.
 
 			SpawnArea (e.g BonePileSpawner) uses `OutsideActiveArea` to determine if it should be simulated.
 		*/
