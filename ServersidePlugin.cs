@@ -158,6 +158,13 @@ namespace Valheim_Serverside
 
 		[HarmonyPatch(typeof(ZDOMan), "ReleaseNearbyZDOS")]
 		static class ZDOMan_ReleaseNearbyZDOS_Patch
+		/*
+			Releases nearby ZDOs for a player if no other peers are nearby that player.
+			If instead the nearby ZDO has no owner, set owner to server so that it simulates on the server.
+
+			Original method:
+			If ZDO is no longer near the peer, release ownership. If no owner set, change ownership to said peer.
+		*/
 		{
 			static bool Prefix(ZDOMan __instance, ref Vector3 refPosition, ref long uid)
 			{
