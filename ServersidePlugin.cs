@@ -23,6 +23,9 @@ namespace Valheim_Serverside
 		}
 
 		public static bool IsServer()
+		/*
+			Calls `ZNet.instance.IsServer` after checking if `ZNet.instance` exists.
+		*/
 		{
 			return ZNet.instance && ZNet.instance.IsServer();
 		}
@@ -38,6 +41,14 @@ namespace Valheim_Serverside
 
 		[HarmonyPatch(typeof(ZNetScene), "OutsideActiveArea", new Type[] { typeof(Vector3) })]
 		private class ZNetScene_OutsideActiveArea_Patch
+		/*
+			Originally uses `ZNet.GetReferencePosition` to determine active area but with the server 
+			handling all areas, it must check if the `Vector3` is within any of the peer's active areas.
+
+			Returns `false` if the point is within *any* of the peer's active areas and `false` otherwise.
+
+			SpawnArea (e.g BonePileSpawner) uses `OutsideActiveArea` to determine if it should be simulated.
+		*/
 		{
 			static bool Prefix(ref bool __result, ZNetScene __instance, Vector3 point)
 			{
@@ -56,6 +67,24 @@ namespace Valheim_Serverside
 
 		[HarmonyPatch(typeof(ZNetScene), "CreateDestroyObjects")]
 		private class CreateDestroyObjects_Patch
+		/*
+			Creates and destroys ZDOs by finding all objects in each peer area.
+
+			Some object overlap can happen if peers are close to each other, the objects are
+			deduplicated by using a HashSet, see `List.Distinct`.
+
+			This method originally only checked for objects in `ZNet.GetReferencePosition()`.
+
+			DistantObjects: Are objects that have `m_distant` set to `true`, set (probably) in the prefab data;
+			Distant objects are not affected by draw distance.
+
+			CreateObjects: Makes no distinction between objects and nearby-objects except in the order
+						   they are created.
+		
+			RemoveObjects: Marks all ZDOs for deletion by setting the current frame number on the ZDO,
+						   and then checks if any of the ZDOs marked for deletion have an older/different
+						   frame number.
+		*/
 		{
 			private static bool Prefix(ZNetScene __instance)
 			{
@@ -81,6 +110,16 @@ namespace Valheim_Serverside
 
 		[HarmonyPatch(typeof(ZoneSystem), "Update")]
 		static class ZoneSystem_Update_Patch
+		/*
+			Creates Local-Zones for each peer position. Enabling simulation to be handled by the server.
+
+			Original method: tries to create a Local-Zone for the position the player is standing in,
+			if this is a server then a Ghost-Zone is created for the current reference position as well
+			as for each peer's position.
+
+			Local-Zone: 
+			Ghost-Zone: 
+		*/
 		{
 			static bool Prefix(ZoneSystem __instance, ref float ___m_updateTimer)
 			{
@@ -93,7 +132,7 @@ namespace Valheim_Serverside
 				if (___m_updateTimer > 0.1f)
 				{
 					___m_updateTimer = 0f;
-					// flag line can probably be removed, as well as the check for it.
+					// original flag line removed, as well as the check for it as it always returns `false` on the server.
 					//bool flag = Traverse.Create(__instance).Method("CreateLocalZones", ZNet.instance.GetReferencePosition()).GetValue<bool>();
 					Traverse.Create(__instance).Method("UpdateTTL", 0.1f).GetValue();
 					if (ZNet.instance.IsServer()) // && !flag)
@@ -102,7 +141,6 @@ namespace Valheim_Serverside
 						//UnityEngine.Debug.Log(String.Concat(new object[] { "CreateLocalZones for", refPoint.x, " ", refPoint.y, " ", refPoint.z }));
 						foreach (ZNetPeer znetPeer in ZNet.instance.GetPeers())
 						{
-							//PrintLog("Is generated: " + Traverse.Create(__instance).Method("IsZoneGenerated", __instance.GetZone(znetPeer.GetRefPos())).GetValue<bool>());
 							Traverse.Create(__instance).Method("CreateLocalZones", znetPeer.GetRefPos()).GetValue();
 						}
 					}
