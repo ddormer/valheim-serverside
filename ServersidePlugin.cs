@@ -128,8 +128,9 @@ namespace Valheim_Serverside
 			if this is a server then a Ghost-Zone is created for the current reference position as well
 			as for each peer's position.
 
-			Local-Zone: 
-			Ghost-Zone: 
+			Local-Zone: Created on every player's client, container for things like terrain and vegetation.
+			Ghost-Zone: Created only on the server, unsimulated (associated GameObjects are destroyed), used
+						only to send associated information to clients.
 		*/
 		{
 			static bool Prefix(ZoneSystem __instance, ref float ___m_updateTimer)
