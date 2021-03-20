@@ -88,10 +88,6 @@ namespace Valheim_Serverside
 		{
 			private static bool Prefix(ZNetScene __instance)
 			{
-				if (!IsServer())
-				{
-					return true;
-				}
 				List<ZDO> m_tempCurrentObjects = new List<ZDO>();
 				List<ZDO> m_tempCurrentDistantObjects = new List<ZDO>();
 				foreach (ZNetPeer znetPeer in ZNet.instance.GetConnectedPeers())
