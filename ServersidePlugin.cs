@@ -8,6 +8,7 @@ using System;
 using BepInEx.Logging;
 using HarmonyLib;
 using System.Reflection;
+using BepInEx;
 using BepInEx.Configuration;
 using UnityEngine;
 
@@ -16,10 +17,23 @@ namespace Valheim_Serverside
 	[BepInPlugin("MVP.Valheim_Serverside", "Valheim Serverside", "1.0.0.0")]
 	public class ServersidePlugin : BaseUnityPlugin
 	{
-		void Awake()
+		public static ConfigEntry<bool> modEnabled;
+
+		private static ServersidePlugin context;
+
+		private void Awake()
 		{
-			UnityEngine.Debug.Log("Valheim Serverside installed");
+			context = this;
+			modEnabled = Config.Bind<bool>("General", "Enabled", true, "Enable or disable the mod");
+
+			if (!modEnabled.Value)
+			{
+				Logger.LogInfo("Valheim Serverside is disabled");
+				return;
+			}
+
 			Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), null);
+			Logger.LogInfo("Valheim Serverside installed");
 		}
 
 		public static bool IsServer()
@@ -34,6 +48,7 @@ namespace Valheim_Serverside
 		{
 			System.Diagnostics.Trace.WriteLine(text);
 		}
+
 		public static void PrintLog(object[] obj)
 		{
 			System.Diagnostics.Trace.WriteLine(string.Concat(obj));
