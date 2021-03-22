@@ -257,7 +257,7 @@ namespace Valheim_Serverside
 				{
 					if (_t.Method("IsInsideRandomEventArea", ___m_randomEvent, player.transform.position).GetValue<bool>())
 					{
-						_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { ___m_randomEvent, false });
+						_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { ___m_randomEvent, false }).GetValue();
 						return false;
 					}
 				}
