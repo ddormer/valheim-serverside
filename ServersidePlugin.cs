@@ -200,5 +200,109 @@ namespace Valheim_Serverside
 				return false;
 			}
 		}
-	}
+
+		[HarmonyPatch(typeof(Chat), "RPC_ChatMessage")]
+		static class Chat_RPC_ChatMessage_Patch
+		{
+			static void Prefix(ref long sender, ref string text)
+			{
+				ZNetPeer peer = ZNet.instance.GetPeer(sender);
+				if (peer == null)
+				{
+					return;
+				}
+				if (text == "startevent")
+				{
+					RandEventSystem.instance.SetRandomEventByName("army_theelder", peer.GetRefPos());
+				}
+				else if (text == "stopevent")
+				{
+					RandEventSystem.instance.ResetRandomEvent();
+				}
+			}
+		}
+
+		[HarmonyPatch(typeof(RandEventSystem), "FixedUpdate")]
+		static class RandEventSystem_FixedUpdate_Patch
+        {
+			static bool Prefix(RandEventSystem __instance, ref RandomEvent ___m_activeEvent, ref RandomEvent ___m_forcedEvent, ref RandomEvent ___m_randomEvent)
+            {
+				Traverse _t = new Traverse(__instance);
+				float fixedDeltaTime = Time.fixedDeltaTime;
+				_t.Method("UpdateForcedEvents", fixedDeltaTime).GetValue();
+				_t.Method("UpdateRandomEvent", fixedDeltaTime).GetValue();
+				if (___m_forcedEvent != null)
+				{
+					___m_forcedEvent.Update(ZNet.instance.IsServer(), ___m_forcedEvent == ___m_activeEvent, true, fixedDeltaTime);
+				}
+				if (___m_randomEvent != null && ZNet.instance.IsServer())
+				{
+					bool playerInArea = _t.Method("IsAnyPlayerInEventArea", ___m_randomEvent).GetValue<bool>();
+					if (___m_randomEvent.Update(true, ___m_randomEvent == ___m_activeEvent, playerInArea, fixedDeltaTime))
+					{
+						_t.Method("SetRandomEvent", new Type[] { typeof(RandomEvent), typeof(Vector3) }, new object[] { null, Vector3.zero }).GetValue();
+					}
+				}
+				if (___m_forcedEvent != null)
+				{
+					_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { ___m_forcedEvent, false }).GetValue();
+					return false;
+				}
+				if (___m_randomEvent == null /* || !Player.m_localPlayer */)
+				{
+					_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { null, false }).GetValue();
+					return false;
+				}
+				foreach (Player player in Player.GetAllPlayers())
+				{
+					if (_t.Method("IsInsideRandomEventArea", ___m_randomEvent, player.transform.position).GetValue<bool>())
+					{
+						_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { ___m_randomEvent, false }).GetValue();
+						return false;
+					}
+				}
+				_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { null, false }).GetValue();
+				return false;
+			}
+        }
+
+        [HarmonyPatch(typeof(SpawnSystem), "UpdateSpawning")]
+        static class SpawnSystem_UpdateSpawning_Patch
+        {
+			static bool Prefix(SpawnSystem __instance)
+			{
+				Traverse _t = new Traverse(__instance);
+				ZNetView m_nview = _t.Field("m_nview").GetValue<ZNetView>();
+				if (!m_nview.IsValid() || !m_nview.IsOwner())
+				{
+					return false;
+				}
+				/*if (Player.m_localPlayer == null)
+				{
+					return false;
+				}*/
+				List<Player> m_nearPlayers = _t.Field("m_nearPlayers").GetValue<List<Player>>();
+				m_nearPlayers.Clear();
+				_t.Method("GetPlayersInZone", m_nearPlayers).GetValue();
+				if (m_nearPlayers.Count == 0)
+				{
+					return false;
+				}
+				DateTime time = ZNet.instance.GetTime();
+				_t.Method("UpdateSpawnList", __instance.m_spawners, time, false).GetValue();
+				List<SpawnSystem.SpawnData> currentSpawners = RandEventSystem.instance.GetCurrentSpawners();
+				if (currentSpawners != null)
+				{
+					_t.Method("UpdateSpawnList", currentSpawners, time, true).GetValue();
+				}
+				return false;
+			}
+
+			/*static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+                var codes = new List<CodeInstruction>(instructions);
+
+            }*/
+		}
+    }
 }
