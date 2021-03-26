@@ -243,7 +243,6 @@ namespace Valheim_Serverside
 			{
 				//var codes = new List<CodeInstruction>(instructions);
 				MethodInfo isAnyPlayerInfo = AccessTools.Method(typeof(RandEventSystem), "IsAnyPlayerInEventArea");
-				MethodInfo isInsideRandomEventAreaInfo = AccessTools.Method(typeof(RandEventSystem), "IsInsideRandomEventArea");
 				FieldInfo field_m_localPlayer = AccessTools.Field(typeof(Player), nameof(Player.m_localPlayer));
 				MethodInfo opImplicitInfo = AccessTools.Method(typeof(UnityEngine.Object), "op_Implicit");
 
@@ -281,14 +280,12 @@ namespace Valheim_Serverside
 					}
 					else if (ldPlayerInArea != null && insideRandomEventAreaCheck.Check(instruction))
 					{
-						{
-							ZLog.Log("Removing a lot and inserting ldPlayerInArea");
-							int count = insideRandomEventAreaCheck.Sequential.Count;
-							int startIdx = i - count;
-							new_instructions.RemoveRange(startIdx, count);
-							new_instructions.Insert(startIdx, ldPlayerInArea);
-							break;
-						}
+						//ZLog.Log("Removing a lot and inserting ldPlayerInArea");
+						int count = insideRandomEventAreaCheck.Sequential.Count;
+						int startIdx = i - (count - 1);
+						new_instructions.RemoveRange(startIdx, count);
+						new_instructions.Insert(startIdx, ldPlayerInArea);
+						break;
 					}
 				}
 
