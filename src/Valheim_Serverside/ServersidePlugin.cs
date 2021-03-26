@@ -388,40 +388,34 @@ namespace Valheim_Serverside
 					yield return instruction;
 				}
 			}
-			static bool Prefix(SpawnSystem __instance)
-			{
-				Traverse _t = new Traverse(__instance);
-				ZNetView m_nview = _t.Field("m_nview").GetValue<ZNetView>();
-				if (!m_nview.IsValid() || !m_nview.IsOwner())
-				{
-					return false;
-				}
-				/*if (Player.m_localPlayer == null)
-				{
-					return false;
-				}*/
-				List<Player> m_nearPlayers = _t.Field("m_nearPlayers").GetValue<List<Player>>();
-				m_nearPlayers.Clear();
-				_t.Method("GetPlayersInZone", m_nearPlayers).GetValue();
-				if (m_nearPlayers.Count == 0)
-				{
-					return false;
-				}
-				DateTime time = ZNet.instance.GetTime();
-				_t.Method("UpdateSpawnList", __instance.m_spawners, time, false).GetValue();
-				List<SpawnSystem.SpawnData> currentSpawners = RandEventSystem.instance.GetCurrentSpawners();
-				if (currentSpawners != null)
-				{
-					_t.Method("UpdateSpawnList", currentSpawners, time, true).GetValue();
-				}
-				return false;
-			}
-
-			/*static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                var codes = new List<CodeInstruction>(instructions);
-
-            }*/
+			//static bool Prefix(SpawnSystem __instance)
+			//{
+			//	Traverse _t = new Traverse(__instance);
+			//	ZNetView m_nview = _t.Field("m_nview").GetValue<ZNetView>();
+			//	if (!m_nview.IsValid() || !m_nview.IsOwner())
+			//	{
+			//		return false;
+			//	}
+			//	/*if (Player.m_localPlayer == null)
+			//	{
+			//		return false;
+			//	}*/
+			//	List<Player> m_nearPlayers = _t.Field("m_nearPlayers").GetValue<List<Player>>();
+			//	m_nearPlayers.Clear();
+			//	_t.Method("GetPlayersInZone", m_nearPlayers).GetValue();
+			//	if (m_nearPlayers.Count == 0)
+			//	{
+			//		return false;
+			//	}
+			//	DateTime time = ZNet.instance.GetTime();
+			//	_t.Method("UpdateSpawnList", __instance.m_spawners, time, false).GetValue();
+			//	List<SpawnSystem.SpawnData> currentSpawners = RandEventSystem.instance.GetCurrentSpawners();
+			//	if (currentSpawners != null)
+			//	{
+			//		_t.Method("UpdateSpawnList", currentSpawners, time, true).GetValue();
+			//	}
+			//	return false;
+			//}
 		}
     }
 }
