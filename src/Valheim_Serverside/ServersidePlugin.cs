@@ -366,6 +366,28 @@ namespace Valheim_Serverside
 		[HarmonyPatch(typeof(SpawnSystem), "UpdateSpawning")]
         static class SpawnSystem_UpdateSpawning_Patch
         {
+
+			static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> _instructions)
+			{
+				FieldInfo field_m_localPlayer = AccessTools.Field(typeof(Player), nameof(Player.m_localPlayer));
+				var localPlayerCheck = new SequentialInstructions(new List<CodeInstruction>(new CodeInstruction[]
+				{
+					new CodeInstruction(OpCodes.Ldsfld, field_m_localPlayer),
+					new CodeInstruction(OpCodes.Ldnull),
+					new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(UnityEngine.Object), "op_Equality")),
+					new CodeInstruction(OpCodes.Brfalse)
+				}));
+
+				foreach (CodeInstruction instruction in _instructions)
+				{
+					if (localPlayerCheck.Check(instruction))
+                    {
+						yield return new CodeInstruction(OpCodes.Brtrue, instruction.operand);
+						continue;
+                    }
+					yield return instruction;
+				}
+			}
 			static bool Prefix(SpawnSystem __instance)
 			{
 				Traverse _t = new Traverse(__instance);
