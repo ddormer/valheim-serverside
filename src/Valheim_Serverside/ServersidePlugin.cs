@@ -20,10 +20,11 @@ namespace Valheim_Serverside
 
 		private void Awake()
 		{
+			bool isDedicated = new ZNet().IsDedicated();
 			context = this;
 			modEnabled = Config.Bind<bool>("General", "Enabled", true, "Enable or disable the mod");
 
-			if (!modEnabled.Value)
+			if (!modEnabled.Value || !isDedicated)
 			{
 				Logger.LogInfo("Valheim Serverside is disabled");
 				return;
