@@ -51,6 +51,30 @@ namespace Valheim_Serverside
 			System.Diagnostics.Trace.WriteLine(string.Concat(obj));
 		}
 
+		#if DEBUG
+		[HarmonyPatch(typeof(Chat), "RPC_ChatMessage")]
+		static class Chat_RPC_ChatMessage_Patch
+		{
+			static void Prefix(ref long sender, ref string text)
+			{
+				ZNetPeer peer = ZNet.instance.GetPeer(sender);
+				if (peer == null)
+				{
+					return;
+				}
+				if (text == "startevent")
+				{
+					RandEventSystem.instance.SetRandomEventByName("army_theelder", peer.GetRefPos());
+				}
+				else if (text == "stopevent")
+				{
+					RandEventSystem.instance.ResetRandomEvent();
+				}
+			}
+		}
+		#endif
+
+
 		[HarmonyPatch(typeof(ZNetScene), "OutsideActiveArea", new Type[] { typeof(Vector3) })]
 		private class ZNetScene_OutsideActiveArea_Patch
 		/*
@@ -200,27 +224,6 @@ namespace Valheim_Serverside
 					}
 				}
 				return false;
-			}
-		}
-
-		[HarmonyPatch(typeof(Chat), "RPC_ChatMessage")]
-		static class Chat_RPC_ChatMessage_Patch
-		{
-			static void Prefix(ref long sender, ref string text)
-			{
-				ZNetPeer peer = ZNet.instance.GetPeer(sender);
-				if (peer == null)
-				{
-					return;
-				}
-				if (text == "startevent")
-				{
-					RandEventSystem.instance.SetRandomEventByName("army_theelder", peer.GetRefPos());
-				}
-				else if (text == "stopevent")
-				{
-					RandEventSystem.instance.ResetRandomEvent();
-				}
 			}
 		}
 
