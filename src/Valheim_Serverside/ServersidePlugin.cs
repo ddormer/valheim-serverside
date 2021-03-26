@@ -284,16 +284,15 @@ namespace Valheim_Serverside
 					}
 				}
 
+				var localPlayerCheck = new SequentialInstructions(new List<CodeInstruction>(new CodeInstruction[]
+				{
+					new CodeInstruction(OpCodes.Ldsfld, field_m_localPlayer),
+					new CodeInstruction(OpCodes.Call, opImplicitInfo),
+					new CodeInstruction(OpCodes.Brfalse)
+				}));
 				for (int i = 0; i < new_instructions.Count; i++)
 				{
 					CodeInstruction instruction = new_instructions[i];
-					var localPlayerCheck = new SequentialInstructions(new List<CodeInstruction>(new CodeInstruction[]
-					{
-						new CodeInstruction(OpCodes.Ldsfld, field_m_localPlayer),
-						new CodeInstruction(OpCodes.Call, opImplicitInfo),
-						new CodeInstruction(OpCodes.Brfalse)
-					}));
-
 					if (localPlayerCheck.Check(instruction))
                     {
 						yield return new CodeInstruction(OpCodes.Brtrue, instruction.operand);
