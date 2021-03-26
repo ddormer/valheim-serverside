@@ -6,6 +6,7 @@ Run world and monster simulations on a **dedicated server**.
 
 - This mod dramatically increases server resource usage and may lead to  experience.
 - Only runs on dedicated servers.
+- This mod does not prevent cheating or any kind of client manipulation.
 
 ### Why?
 
