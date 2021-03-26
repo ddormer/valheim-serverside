@@ -236,46 +236,6 @@ namespace Valheim_Serverside
 				{OpCodes.Stloc, OpCodes.Ldloc}
 			};
 
-			/*static bool Prefix(RandEventSystem __instance, ref RandomEvent ___m_activeEvent, ref RandomEvent ___m_forcedEvent, ref RandomEvent ___m_randomEvent)
-			{
-				Traverse _t = new Traverse(__instance);
-				float fixedDeltaTime = Time.fixedDeltaTime;
-				_t.Method("UpdateForcedEvents", fixedDeltaTime).GetValue();
-				_t.Method("UpdateRandomEvent", fixedDeltaTime).GetValue();
-				if (___m_forcedEvent != null)
-				{
-					___m_forcedEvent.Update(ZNet.instance.IsServer(), ___m_forcedEvent == ___m_activeEvent, true, fixedDeltaTime);
-				}
-				if (___m_randomEvent != null && ZNet.instance.IsServer())
-				{
-					bool playerInArea = _t.Method("IsAnyPlayerInEventArea", ___m_randomEvent).GetValue<bool>();
-					if (___m_randomEvent.Update(true, ___m_randomEvent == ___m_activeEvent, playerInArea, fixedDeltaTime))
-					{
-						_t.Method("SetRandomEvent", new Type[] { typeof(RandomEvent), typeof(Vector3) }, new object[] { null, Vector3.zero }).GetValue();
-					}
-				}
-				if (___m_forcedEvent != null)
-				{
-					_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { ___m_forcedEvent, false }).GetValue();
-					return false;
-				}
-				if (___m_randomEvent == null *//* || !Player.m_localPlayer *//*)
-				{
-					_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { null, false }).GetValue();
-					return false;
-				}
-				foreach (Player player in Player.GetAllPlayers())
-				{
-					if (_t.Method("IsInsideRandomEventArea", ___m_randomEvent, player.transform.position).GetValue<bool>())
-					{
-						_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { ___m_randomEvent, false }).GetValue();
-						return false;
-					}
-				}
-				_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { null, false }).GetValue();
-				return false;
-			}*/
-
 			static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> _instructions)
 			{
 				//var codes = new List<CodeInstruction>(instructions);
@@ -338,16 +298,11 @@ namespace Valheim_Serverside
 							continue;
 						}
 
-						if (foundLocalPlayerCheck)
-						{
-							ZLog.Log(instruction.operand.ToString());
-							// [Info   : Unity Log] 03/25/2021 22:41:15: call static bool UnityEngine.Object::op_Implicit(UnityEngine.Object exists)
-						}
-
 						//if (foundLocalPlayerCheck && (instruction.operand.ToString() == "Boolean op_Implicit(UnityEngine.Object)"))
 						if (foundLocalPlayerCheck && instruction.OperandIs(opImplicitInfo))
 						{
 							ZLog.Log("foundLocalPlayerCheck && op_Implicit");
+							ZLog.Log(instruction);
 							yield return instruction;
 							continue;
 						}
@@ -366,6 +321,46 @@ namespace Valheim_Serverside
 					yield return instruction;
 				}
 			}
+
+			/*static bool Prefix(RandEventSystem __instance, ref RandomEvent ___m_activeEvent, ref RandomEvent ___m_forcedEvent, ref RandomEvent ___m_randomEvent)
+			{
+				Traverse _t = new Traverse(__instance);
+				float fixedDeltaTime = Time.fixedDeltaTime;
+				_t.Method("UpdateForcedEvents", fixedDeltaTime).GetValue();
+				_t.Method("UpdateRandomEvent", fixedDeltaTime).GetValue();
+				if (___m_forcedEvent != null)
+				{
+					___m_forcedEvent.Update(ZNet.instance.IsServer(), ___m_forcedEvent == ___m_activeEvent, true, fixedDeltaTime);
+				}
+				if (___m_randomEvent != null && ZNet.instance.IsServer())
+				{
+					bool playerInArea = _t.Method("IsAnyPlayerInEventArea", ___m_randomEvent).GetValue<bool>();
+					if (___m_randomEvent.Update(true, ___m_randomEvent == ___m_activeEvent, playerInArea, fixedDeltaTime))
+					{
+						_t.Method("SetRandomEvent", new Type[] { typeof(RandomEvent), typeof(Vector3) }, new object[] { null, Vector3.zero }).GetValue();
+					}
+				}
+				if (___m_forcedEvent != null)
+				{
+					_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { ___m_forcedEvent, false }).GetValue();
+					return false;
+				}
+				if (___m_randomEvent == null *//* || !Player.m_localPlayer *//*)
+				{
+					_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { null, false }).GetValue();
+					return false;
+				}
+				foreach (Player player in Player.GetAllPlayers())
+				{
+					if (_t.Method("IsInsideRandomEventArea", ___m_randomEvent, player.transform.position).GetValue<bool>())
+					{
+						_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { ___m_randomEvent, false }).GetValue();
+						return false;
+					}
+				}
+				_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { null, false }).GetValue();
+				return false;
+			}*/
 		}
 
 		[HarmonyPatch(typeof(SpawnSystem), "UpdateSpawning")]
