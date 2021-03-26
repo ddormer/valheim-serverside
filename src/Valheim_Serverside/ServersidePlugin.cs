@@ -246,7 +246,6 @@ namespace Valheim_Serverside
 
 				bool foundIsAnyPlayer = false;
 				CodeInstruction ldPlayerInArea = null;
-				bool foundLocalPlayerCheck = false;
 
 				List<CodeInstruction> instructions = _instructions.ToList();
 				List<CodeInstruction> new_instructions = _instructions.ToList();
@@ -288,34 +287,17 @@ namespace Valheim_Serverside
 				for (int i = 0; i < new_instructions.Count; i++)
 				{
 					CodeInstruction instruction = new_instructions[i];
-					if (ldPlayerInArea != null)
+					var localPlayerCheck = new SequentialInstructions(new List<CodeInstruction>(new CodeInstruction[]
 					{
-						if (instruction.OperandIs(field_m_localPlayer))
-						{
-							//ZLog.Log("field_m_localPlayer");
-							foundLocalPlayerCheck = true;
-							yield return instruction;
-							continue;
-						}
+						new CodeInstruction(OpCodes.Ldsfld, field_m_localPlayer),
+						new CodeInstruction(OpCodes.Call, opImplicitInfo),
+						new CodeInstruction(OpCodes.Brfalse)
+					}));
 
-						//if (foundLocalPlayerCheck && (instruction.operand.ToString() == "Boolean op_Implicit(UnityEngine.Object)"))
-						if (foundLocalPlayerCheck && instruction.OperandIs(opImplicitInfo))
-						{
-							ZLog.Log("foundLocalPlayerCheck && op_Implicit");
-							ZLog.Log(instruction);
-							yield return instruction;
-							continue;
-						}
-
-						if (foundLocalPlayerCheck && instruction.opcode == OpCodes.Brfalse)
-						{
-							//ZLog.Log("foundLocalPlayerCheck && OperandIs brfalse.s");
-							foundLocalPlayerCheck = false;
-							yield return new CodeInstruction(OpCodes.Brtrue, instruction.operand);
-							continue;
-						}
-
-						foundLocalPlayerCheck = false;
+					if (localPlayerCheck.Check(instruction))
+                    {
+						yield return new CodeInstruction(OpCodes.Brtrue, instruction.operand);
+						continue;
 					}
 
 					yield return instruction;
