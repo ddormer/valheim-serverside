@@ -4,8 +4,10 @@ using System.Linq;
 using BepInEx;
 using HarmonyLib;
 using System.Reflection;
+using System.Reflection.Emit;
 using BepInEx.Configuration;
 using UnityEngine;
+using OpCodes = System.Reflection.Emit.OpCodes;
 
 namespace Valheim_Serverside
 {
@@ -224,9 +226,104 @@ namespace Valheim_Serverside
 
 		[HarmonyPatch(typeof(RandEventSystem), "FixedUpdate")]
 		static class RandEventSystem_FixedUpdate_Patch
-        {
-			static bool Prefix(RandEventSystem __instance, ref RandomEvent ___m_activeEvent, ref RandomEvent ___m_forcedEvent, ref RandomEvent ___m_randomEvent)
-            {
+		{
+			static Dictionary<OpCode, OpCode> StlocToLdloc = new Dictionary<OpCode, OpCode> {
+				{OpCodes.Stloc_0, OpCodes.Ldloc_0},
+				{OpCodes.Stloc_1, OpCodes.Ldloc_1},
+				{OpCodes.Stloc_2, OpCodes.Ldloc_2},
+				{OpCodes.Stloc_3, OpCodes.Ldloc_3},
+				{OpCodes.Stloc_S, OpCodes.Ldloc_S},
+				{OpCodes.Stloc, OpCodes.Ldloc}
+			};
+
+			static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> _instructions)
+			{
+				//var codes = new List<CodeInstruction>(instructions);
+				MethodInfo isAnyPlayerInfo = AccessTools.Method(typeof(RandEventSystem), "IsAnyPlayerInEventArea");
+				MethodInfo isInsideRandomEventAreaInfo = AccessTools.Method(typeof(RandEventSystem), "IsInsideRandomEventArea");
+				FieldInfo field_m_localPlayer = AccessTools.Field(typeof(Player), nameof(Player.m_localPlayer));
+				MethodInfo opImplicitInfo = AccessTools.Method(typeof(UnityEngine.Object), "op_Implicit");
+
+				bool foundIsAnyPlayer = false;
+				CodeInstruction ldPlayerInArea = null;
+				bool foundLocalPlayerCheck = false;
+
+				List<CodeInstruction> instructions = _instructions.ToList();
+				List<CodeInstruction> new_instructions = _instructions.ToList();
+
+
+				for (int i = 0; i < instructions.Count; i++)
+				{
+					CodeInstruction instruction = instructions[i];
+
+					if (instruction.OperandIs(isAnyPlayerInfo))
+					{
+						//ZLog.Log("isAnyPlayerInfo");
+						foundIsAnyPlayer = true;
+					}
+					else if (foundIsAnyPlayer && instruction.IsStloc())
+					{
+						//ZLog.Log("foundIsAnyPlayer && IsStloc");
+						ldPlayerInArea = instruction.Clone();
+						ldPlayerInArea.opcode = StlocToLdloc[instruction.opcode];
+						foundIsAnyPlayer = false;
+					}
+					else if (instruction.opcode == OpCodes.Ldarg_0)
+					{
+						if (instructions[i + 1].opcode == OpCodes.Ldarg_0 &&
+							instructions[i + 2].opcode == OpCodes.Ldfld &&
+							instructions[i + 3].opcode == OpCodes.Ldsfld &&
+							instructions[i + 4].opcode == OpCodes.Callvirt &&
+							instructions[i + 5].opcode == OpCodes.Callvirt &&
+							instructions[i + 6].opcode == OpCodes.Call
+							)
+						{
+							//ZLog.Log("Removing a lot and inserting ldPlayerInArea");
+							new_instructions.RemoveRange(i, 7);
+							new_instructions.Insert(i, ldPlayerInArea);
+						}
+					}
+				}
+
+				for (int i = 0; i < new_instructions.Count; i++)
+				{
+					CodeInstruction instruction = new_instructions[i];
+					if (ldPlayerInArea != null)
+					{
+						if (instruction.OperandIs(field_m_localPlayer))
+						{
+							//ZLog.Log("field_m_localPlayer");
+							foundLocalPlayerCheck = true;
+							yield return instruction;
+							continue;
+						}
+
+						//if (foundLocalPlayerCheck && (instruction.operand.ToString() == "Boolean op_Implicit(UnityEngine.Object)"))
+						if (foundLocalPlayerCheck && instruction.OperandIs(opImplicitInfo))
+						{
+							ZLog.Log("foundLocalPlayerCheck && op_Implicit");
+							ZLog.Log(instruction);
+							yield return instruction;
+							continue;
+						}
+
+						if (foundLocalPlayerCheck && instruction.opcode == OpCodes.Brfalse)
+						{
+							//ZLog.Log("foundLocalPlayerCheck && OperandIs brfalse.s");
+							foundLocalPlayerCheck = false;
+							yield return new CodeInstruction(OpCodes.Brtrue, instruction.operand);
+							continue;
+						}
+
+						foundLocalPlayerCheck = false;
+					}
+
+					yield return instruction;
+				}
+			}
+
+			/*static bool Prefix(RandEventSystem __instance, ref RandomEvent ___m_activeEvent, ref RandomEvent ___m_forcedEvent, ref RandomEvent ___m_randomEvent)
+			{
 				Traverse _t = new Traverse(__instance);
 				float fixedDeltaTime = Time.fixedDeltaTime;
 				_t.Method("UpdateForcedEvents", fixedDeltaTime).GetValue();
@@ -248,7 +345,7 @@ namespace Valheim_Serverside
 					_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { ___m_forcedEvent, false }).GetValue();
 					return false;
 				}
-				if (___m_randomEvent == null /* || !Player.m_localPlayer */)
+				if (___m_randomEvent == null *//* || !Player.m_localPlayer *//*)
 				{
 					_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { null, false }).GetValue();
 					return false;
@@ -263,10 +360,10 @@ namespace Valheim_Serverside
 				}
 				_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { null, false }).GetValue();
 				return false;
-			}
-        }
+			}*/
+		}
 
-        [HarmonyPatch(typeof(SpawnSystem), "UpdateSpawning")]
+		[HarmonyPatch(typeof(SpawnSystem), "UpdateSpawning")]
         static class SpawnSystem_UpdateSpawning_Patch
         {
 			static bool Prefix(SpawnSystem __instance)
