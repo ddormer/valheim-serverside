@@ -244,7 +244,6 @@ namespace Valheim_Serverside
 			{
 				//var codes = new List<CodeInstruction>(instructions);
 				MethodInfo isAnyPlayerInfo = AccessTools.Method(typeof(RandEventSystem), "IsAnyPlayerInEventArea");
-				MethodInfo isInsideRandomEventAreaInfo = AccessTools.Method(typeof(RandEventSystem), "IsInsideRandomEventArea");
 				FieldInfo field_m_localPlayer = AccessTools.Field(typeof(Player), nameof(Player.m_localPlayer));
 				MethodInfo opImplicitInfo = AccessTools.Method(typeof(UnityEngine.Object), "op_Implicit");
 
@@ -254,7 +253,16 @@ namespace Valheim_Serverside
 				List<CodeInstruction> instructions = _instructions.ToList();
 				List<CodeInstruction> new_instructions = _instructions.ToList();
 
-
+				var insideRandomEventAreaCheck = new SequentialInstructions(new List<CodeInstruction>(new CodeInstruction[]
+				{
+					new CodeInstruction(OpCodes.Ldarg_0),
+					new CodeInstruction(OpCodes.Ldarg_0),
+					new CodeInstruction(OpCodes.Ldfld),
+					new CodeInstruction(OpCodes.Ldsfld),
+					new CodeInstruction(OpCodes.Callvirt),
+					new CodeInstruction(OpCodes.Callvirt),
+					new CodeInstruction(OpCodes.Call)
+				}));
 				for (int i = 0; i < instructions.Count; i++)
 				{
 					CodeInstruction instruction = instructions[i];
@@ -271,20 +279,14 @@ namespace Valheim_Serverside
 						ldPlayerInArea.opcode = StlocToLdloc[instruction.opcode];
 						foundIsAnyPlayer = false;
 					}
-					else if (instruction.opcode == OpCodes.Ldarg_0)
+					else if (ldPlayerInArea != null && insideRandomEventAreaCheck.Check(instruction))
 					{
-						if (instructions[i + 1].opcode == OpCodes.Ldarg_0 &&
-							instructions[i + 2].opcode == OpCodes.Ldfld &&
-							instructions[i + 3].opcode == OpCodes.Ldsfld &&
-							instructions[i + 4].opcode == OpCodes.Callvirt &&
-							instructions[i + 5].opcode == OpCodes.Callvirt &&
-							instructions[i + 6].opcode == OpCodes.Call
-							)
-						{
-							//ZLog.Log("Removing a lot and inserting ldPlayerInArea");
-							new_instructions.RemoveRange(i, 7);
-							new_instructions.Insert(i, ldPlayerInArea);
-						}
+						//ZLog.Log("Removing a lot and inserting ldPlayerInArea");
+						int count = insideRandomEventAreaCheck.Sequential.Count;
+						int startIdx = i - (count - 1);
+						new_instructions.RemoveRange(startIdx, count);
+						new_instructions.Insert(startIdx, ldPlayerInArea);
+						break;
 					}
 				}
 
