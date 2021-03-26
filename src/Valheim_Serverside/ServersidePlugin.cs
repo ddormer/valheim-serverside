@@ -294,7 +294,7 @@ namespace Valheim_Serverside
 				{
 					CodeInstruction instruction = new_instructions[i];
 					if (localPlayerCheck.Check(instruction))
-                    {
+					{
 						yield return new CodeInstruction(OpCodes.Brtrue, instruction.operand);
 						continue;
 					}
@@ -345,8 +345,8 @@ namespace Valheim_Serverside
 		}
 
 		[HarmonyPatch(typeof(SpawnSystem), "UpdateSpawning")]
-        static class SpawnSystem_UpdateSpawning_Patch
-        {
+		static class SpawnSystem_UpdateSpawning_Patch
+		{
 
 			static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> _instructions)
 			{
@@ -362,10 +362,10 @@ namespace Valheim_Serverside
 				foreach (CodeInstruction instruction in _instructions)
 				{
 					if (localPlayerCheck.Check(instruction))
-                    {
+					{
 						yield return new CodeInstruction(OpCodes.Brtrue, instruction.operand);
 						continue;
-                    }
+					}
 					yield return instruction;
 				}
 			}
@@ -398,5 +398,5 @@ namespace Valheim_Serverside
 			//	return false;
 			//}
 		}
-    }
+	}
 }
