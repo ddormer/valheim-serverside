@@ -366,40 +366,56 @@ namespace Valheim_Serverside
 		[HarmonyPatch(typeof(SpawnSystem), "UpdateSpawning")]
         static class SpawnSystem_UpdateSpawning_Patch
         {
-			static bool Prefix(SpawnSystem __instance)
+
+			static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> _instructions)
 			{
-				Traverse _t = new Traverse(__instance);
-				ZNetView m_nview = _t.Field("m_nview").GetValue<ZNetView>();
-				if (!m_nview.IsValid() || !m_nview.IsOwner())
+				FieldInfo field_m_localPlayer = AccessTools.Field(typeof(Player), nameof(Player.m_localPlayer));
+				var localPlayerCheck = new SequentialInstructions(new List<CodeInstruction>(new CodeInstruction[]
 				{
-					return false;
+					new CodeInstruction(OpCodes.Ldsfld, field_m_localPlayer),
+					new CodeInstruction(OpCodes.Ldnull),
+					new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(UnityEngine.Object), "op_Equality")),
+					new CodeInstruction(OpCodes.Brfalse)
+				}));
+
+				foreach (CodeInstruction instruction in _instructions)
+				{
+					if (localPlayerCheck.Check(instruction))
+                    {
+						yield return new CodeInstruction(OpCodes.Brtrue, instruction.operand);
+						continue;
+                    }
+					yield return instruction;
 				}
-				/*if (Player.m_localPlayer == null)
-				{
-					return false;
-				}*/
-				List<Player> m_nearPlayers = _t.Field("m_nearPlayers").GetValue<List<Player>>();
-				m_nearPlayers.Clear();
-				_t.Method("GetPlayersInZone", m_nearPlayers).GetValue();
-				if (m_nearPlayers.Count == 0)
-				{
-					return false;
-				}
-				DateTime time = ZNet.instance.GetTime();
-				_t.Method("UpdateSpawnList", __instance.m_spawners, time, false).GetValue();
-				List<SpawnSystem.SpawnData> currentSpawners = RandEventSystem.instance.GetCurrentSpawners();
-				if (currentSpawners != null)
-				{
-					_t.Method("UpdateSpawnList", currentSpawners, time, true).GetValue();
-				}
-				return false;
 			}
-
-			/*static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                var codes = new List<CodeInstruction>(instructions);
-
-            }*/
+			//static bool Prefix(SpawnSystem __instance)
+			//{
+			//	Traverse _t = new Traverse(__instance);
+			//	ZNetView m_nview = _t.Field("m_nview").GetValue<ZNetView>();
+			//	if (!m_nview.IsValid() || !m_nview.IsOwner())
+			//	{
+			//		return false;
+			//	}
+			//	/*if (Player.m_localPlayer == null)
+			//	{
+			//		return false;
+			//	}*/
+			//	List<Player> m_nearPlayers = _t.Field("m_nearPlayers").GetValue<List<Player>>();
+			//	m_nearPlayers.Clear();
+			//	_t.Method("GetPlayersInZone", m_nearPlayers).GetValue();
+			//	if (m_nearPlayers.Count == 0)
+			//	{
+			//		return false;
+			//	}
+			//	DateTime time = ZNet.instance.GetTime();
+			//	_t.Method("UpdateSpawnList", __instance.m_spawners, time, false).GetValue();
+			//	List<SpawnSystem.SpawnData> currentSpawners = RandEventSystem.instance.GetCurrentSpawners();
+			//	if (currentSpawners != null)
+			//	{
+			//		_t.Method("UpdateSpawnList", currentSpawners, time, true).GetValue();
+			//	}
+			//	return false;
+			//}
 		}
     }
 }
