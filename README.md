@@ -2,9 +2,12 @@
 
 Run world and monster simulations on a **dedicated server**.
 
+Tested for verion: 0.148.6
+
 ### Caveats
 
 - This mod dramatically increases server resource usage and may lead to a poor gameplay experience.
+- Likely to break future game patches, please consider disabling this mod anytime a new game patch is released.
 - Only runs on dedicated servers.
 - This mod does not prevent cheating or any kind of client manipulation.
 
