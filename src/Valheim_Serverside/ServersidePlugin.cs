@@ -249,7 +249,6 @@ namespace Valheim_Serverside
 
 				bool foundIsAnyPlayer = false;
 				CodeInstruction ldPlayerInArea = null;
-				bool foundLocalPlayerCheck = false;
 
 				List<CodeInstruction> instructions = _instructions.ToList();
 				List<CodeInstruction> new_instructions = _instructions.ToList();
@@ -288,37 +287,19 @@ namespace Valheim_Serverside
 					}
 				}
 
+				var localPlayerCheck = new SequentialInstructions(new List<CodeInstruction>(new CodeInstruction[]
+				{
+					new CodeInstruction(OpCodes.Ldsfld, field_m_localPlayer),
+					new CodeInstruction(OpCodes.Call, opImplicitInfo),
+					new CodeInstruction(OpCodes.Brfalse)
+				}));
 				for (int i = 0; i < new_instructions.Count; i++)
 				{
 					CodeInstruction instruction = new_instructions[i];
-					if (ldPlayerInArea != null)
+					if (localPlayerCheck.Check(instruction))
 					{
-						if (instruction.OperandIs(field_m_localPlayer))
-						{
-							//ZLog.Log("field_m_localPlayer");
-							foundLocalPlayerCheck = true;
-							yield return instruction;
-							continue;
-						}
-
-						//if (foundLocalPlayerCheck && (instruction.operand.ToString() == "Boolean op_Implicit(UnityEngine.Object)"))
-						if (foundLocalPlayerCheck && instruction.OperandIs(opImplicitInfo))
-						{
-							ZLog.Log("foundLocalPlayerCheck && op_Implicit");
-							ZLog.Log(instruction);
-							yield return instruction;
-							continue;
-						}
-
-						if (foundLocalPlayerCheck && instruction.opcode == OpCodes.Brfalse)
-						{
-							//ZLog.Log("foundLocalPlayerCheck && OperandIs brfalse.s");
-							foundLocalPlayerCheck = false;
-							yield return new CodeInstruction(OpCodes.Brtrue, instruction.operand);
-							continue;
-						}
-
-						foundLocalPlayerCheck = false;
+						yield return new CodeInstruction(OpCodes.Brtrue, instruction.operand);
+						continue;
 					}
 
 					yield return instruction;
@@ -367,8 +348,8 @@ namespace Valheim_Serverside
 		}
 
 		[HarmonyPatch(typeof(SpawnSystem), "UpdateSpawning")]
-        static class SpawnSystem_UpdateSpawning_Patch
-        {
+		static class SpawnSystem_UpdateSpawning_Patch
+		{
 
 			static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> _instructions)
 			{
@@ -384,10 +365,10 @@ namespace Valheim_Serverside
 				foreach (CodeInstruction instruction in _instructions)
 				{
 					if (localPlayerCheck.Check(instruction))
-                    {
+					{
 						yield return new CodeInstruction(OpCodes.Brtrue, instruction.operand);
 						continue;
-                    }
+					}
 					yield return instruction;
 				}
 			}
@@ -420,5 +401,5 @@ namespace Valheim_Serverside
 			//	return false;
 			//}
 		}
-    }
+	}
 }
