@@ -256,6 +256,7 @@ namespace Valheim_Serverside
 				var insideRandomEventAreaCheck = new SequentialInstructions(new List<CodeInstruction>(new CodeInstruction[]
 				{
 					new CodeInstruction(OpCodes.Ldarg_0),
+					new CodeInstruction(OpCodes.Ldarg_0),
 					new CodeInstruction(OpCodes.Ldfld),
 					new CodeInstruction(OpCodes.Ldsfld),
 					new CodeInstruction(OpCodes.Callvirt),
@@ -278,17 +279,15 @@ namespace Valheim_Serverside
 						ldPlayerInArea.opcode = StlocToLdloc[instruction.opcode];
 						foundIsAnyPlayer = false;
 					}
-					else if (ldPlayerInArea != null)
+					else if (ldPlayerInArea != null && insideRandomEventAreaCheck.Check(instruction))
 					{
-						if (insideRandomEventAreaCheck.Check(instruction))
 						{
-							{
-								//ZLog.Log("Removing a lot and inserting ldPlayerInArea");
-								int count = insideRandomEventAreaCheck.Sequential.Count;
-								int startIdx = i - count;
-								new_instructions.RemoveRange(startIdx, count);
-								new_instructions.Insert(startIdx, ldPlayerInArea);
-							}
+							ZLog.Log("Removing a lot and inserting ldPlayerInArea");
+							int count = insideRandomEventAreaCheck.Sequential.Count;
+							int startIdx = i - count;
+							new_instructions.RemoveRange(startIdx, count);
+							new_instructions.Insert(startIdx, ldPlayerInArea);
+							break;
 						}
 					}
 				}
