@@ -407,6 +407,11 @@ namespace Valheim_Serverside
 
 		[HarmonyPatch(typeof(ZRoutedRpc), "RouteRPC")]
 		static class ZRoutedRpc_RouteRPC_Patch
+		/*
+		* When a client requests to be the "user" (driver) of a ship this RPC method
+		* is sent from the current ship owner when they accept the request.
+		* We set the owner of the ship to the new ship driver.
+		*/
 		{
 			static void Prefix(ZRoutedRpc.RoutedRPCData rpcData)
 			{
@@ -421,5 +426,21 @@ namespace Valheim_Serverside
 				}
 			}
 		}
+
+		[HarmonyPatch(typeof(Ship), "UpdateOwner")]
+		static class Ship_UpdateOwner_Patch
+		/*
+		If the ship has no valid user, set the owner to the server
+		to ensure simulations are updated correctly.
+		*/
+		{ 
+			static bool Prefix(ref Ship __instance) {
+				if (!__instance.m_shipControlls.HaveValidUser())
+                {
+					new Traverse(__instance).Field("m_nview").GetValue<ZNetView>().GetZDO().SetOwner(ZNet.instance.GetUID());
+                }
+				return true;
+			}
+        }
 	}
 }
