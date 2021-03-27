@@ -2,7 +2,7 @@
 
 Run world and monster simulations on a **dedicated server**.
 
-Tested for verion: 0.148.6
+Updated for patch: 0.148.6
 
 ### Caveats
 
@@ -10,6 +10,11 @@ Tested for verion: 0.148.6
 - Likely to break future game patches, please consider disabling this mod anytime a new game patch is released.
 - Only runs on dedicated servers.
 - This mod does not prevent cheating or any kind of client manipulation.
+
+### Installation
+ 1. Install BepInEx (link in the requirements above)
+ 2. Copy plugin DLL into the BepInEx/plugins/ directory on your dedicated server.
+ 3. You're done! No client-side changes are needed.
 
 ### Why?
 
