@@ -404,5 +404,22 @@ namespace Valheim_Serverside
 			//	return false;
 			//}
 		}
+
+		[HarmonyPatch(typeof(ZRoutedRpc), "RouteRPC")]
+		static class ZRoutedRpc_RouteRPC_Patch
+		{
+			static void Prefix(ZRoutedRpc.RoutedRPCData rpcData)
+			{
+				if (rpcData.m_methodHash == "RequestRespons".GetStableHashCode())
+				{
+					bool granted = rpcData.m_parameters.ReadBool();
+					ZDO zdo = ZDOMan.instance.GetZDO(rpcData.m_targetZDO);
+					if (zdo != null && granted)
+					{
+						zdo.SetOwner(rpcData.m_targetPeerID);
+					}
+				}
+			}
+		}
 	}
 }
