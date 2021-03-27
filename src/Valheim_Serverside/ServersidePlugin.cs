@@ -427,6 +427,7 @@ namespace Valheim_Serverside
 			}
 		}
 
+		[HarmonyPatch(typeof(Ship), "UpdateOwner")]
 		static class Ship_UpdateOwner_Patch
 		/*
 		If the ship has no valid user, set the owner to the server
