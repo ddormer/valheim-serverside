@@ -1,6 +1,8 @@
-# Valheim Serverside
+# Valheim Serverside Simulations
 
 Run world and monster simulations on a **dedicated server**.
+
+## WARNING: This mod is largely untested, so DO NOT use it on any worlds or characters you care about losing without first making backups.
 
 Updated for patch: 0.148.6
 
