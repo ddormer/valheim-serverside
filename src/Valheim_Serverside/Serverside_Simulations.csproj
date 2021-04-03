@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Valheim_Serverside</RootNamespace>
-    <AssemblyName>Valheim_Serverside</AssemblyName>
+    <AssemblyName>Serverside_Simulations</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

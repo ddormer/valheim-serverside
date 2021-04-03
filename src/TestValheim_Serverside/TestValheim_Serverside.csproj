@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(SolutionDir)\src\Valheim_Serverside\Valheim_Serverside.csproj" />
+    <ProjectReference Include="..\Valheim_Serverside\Serverside_Simulations.csproj" />
   </ItemGroup>
 
   <ItemGroup>

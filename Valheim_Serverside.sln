@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31105.61
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Valheim_Serverside", "src\Valheim_Serverside\Valheim_Serverside.csproj", "{118598C3-BCC2-4A92-A60E-F77BE92F1305}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serverside_Simulations", "src\Valheim_Serverside\Serverside_Simulations.csproj", "{118598C3-BCC2-4A92-A60E-F77BE92F1305}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestValheim_Serverside", "src\TestValheim_Serverside\TestValheim_Serverside.csproj", "{06611A38-8A53-4B64-86F3-8C6466F64D47}"
 EndProject
