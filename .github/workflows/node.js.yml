@@ -31,6 +31,7 @@ jobs:
          EXECUTE_COMMANDS: |
            npm install markdown-to-bbcode
            node --experimental-modules build-bbcode.mjs
+           git diff
          COMMIT_MESSAGE: 'chore: update BBCode README'
          COMMIT_NAME: 'GitHub Actions'
          COMMIT_EMAIL: 'me@darren.io'
