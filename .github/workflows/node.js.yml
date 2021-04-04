@@ -25,6 +25,5 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm ci
     - run: npm install markdown-to-bbcode
     - run: node build-bbcode.js
