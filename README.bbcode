@@ -1,0 +1,33 @@
+[b][size=7]Valheim Serverside Simulations[/size][/b]
+
+Run world and monster simulations on a [b]dedicated server[/b].
+
+[b][size=6]WARNING: This mod is largely untested, so DO NOT use it on any worlds or characters you care about losing without first making backups.[/size][/b]
+
+Updated for patch: 0.148.6
+
+[b][size=5]Caveats[/size][/b]
+[list]
+[*]This mod dramatically increases server resource usage and may lead to a poor gameplay experience.
+[*]Likely to break future game patches, please consider disabling this mod anytime a new game patch is released.
+[*]Only runs on dedicated servers.
+[*]This mod does not prevent cheating or any kind of client manipulation.
+[/list]
+[b][size=5]Installation[/size][/b]
+[list=1]
+[*]Install BepInEx (link in the requirements above)
+[*]Copy plugin DLL into the BepInEx/plugins/ directory on your dedicated server.
+[*]You&#39;re done! No client-side changes are needed.
+[/list]
+[b][size=5]Why?[/size][/b]
+
+Ordinarily, to keep server resource usage low, Valheim will hand off simulation of an area to the first client that enters said area. However, if the player in charge of the area has a poor connection all other players in that area will suffer. This mod is an attempt at improving that specific situation at the cost of increased latency for the client which would ordinarily own the area.
+
+[b][size=5]How?[/size][/b]
+
+The dedicated server mod will forcefully take control of the objects in the world and simulate them.
+
+[b][size=5]Known issues[/size][/b]
+[list]
+[*]When a player goes through a portal, other players nearby may momentarily see the player appear on their location. This does not effect the mechanics of teleportation and appears to only be a visual glitch.
+[/list]
