@@ -25,5 +25,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
+    - name: Create PR Action
+      uses: technote-space/create-pr-action@v2.0.4
     - run: npm install markdown-to-bbcode
     - run: node --experimental-modules build-bbcode.mjs
