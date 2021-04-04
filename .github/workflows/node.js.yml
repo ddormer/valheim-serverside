@@ -26,4 +26,4 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm install markdown-to-bbcode
-    - run: node --experimental-modules build-bbcode.js
+    - run: node --experimental-modules build-bbcode.mjs
