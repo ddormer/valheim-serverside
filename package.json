@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "markdown-to-bbcode": "^0.3.0"
+  }
+}
