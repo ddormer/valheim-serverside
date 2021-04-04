@@ -25,15 +25,19 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Create PR Action
-      uses: technote-space/create-pr-action@v2.0.4
-      with:
-         EXECUTE_COMMANDS: |
-           npm install markdown-to-bbcode
-           node --experimental-modules build-bbcode.mjs
-           git diff
-         COMMIT_MESSAGE: 'chore: update BBCode README'
-         COMMIT_NAME: 'GitHub Actions'
-         COMMIT_EMAIL: 'me@darren.io'
-         PR_BRANCH_NAME: 'chore-npm-update-${PR_ID}'
-         PR_TITLE: 'chore: update BBCode README'
+    - name: "Update BBCode README" 
+      run: |
+         npm install markdown-to-bbcode
+         node --experimental-modules build-bbcode.mjs
+    - name: Commit files
+      run: |
+        git config --local user.email "$(git log --format='%ae' HEAD^!)"
+        git config --local user.name "$(git log --format='%an' HEAD^!)"
+        git remote add github "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git"
+        git pull github ${GITHUB_REF} --ff-only
+        git add .
+        if [ -z "$(git status --porcelain)" ]; then
+          exit 0
+        fi
+        git commit -m "Update README.bbcode"
+        git push github HEAD:${GITHUB_REF}
