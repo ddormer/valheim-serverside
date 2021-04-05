@@ -37,7 +37,7 @@ jobs:
         git pull github ${GITHUB_REF} --ff-only
         git add README.bbcode
         git status --porcelain
-        if [ -z "$(git status --porcelain)" ]; then
+        if [ -z "$(git diff-files --quiet README.bbcode)" ]; then
           exit 0
         fi
         git commit -m "Update README.bbcode"
