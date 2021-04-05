@@ -76,41 +76,18 @@ namespace Valheim_Serverside
 		#endif
 
 
-		[HarmonyPatch(typeof(ZNetScene), "OutsideActiveArea", new Type[] { typeof(Vector3) })]
-		private class ZNetScene_OutsideActiveArea_Patch
-		/*
-			Originally uses `ZNet.GetReferencePosition` to determine active area but with the server 
-			handling all areas, it must check if the `Vector3` is within any of the peers' active areas.
-
-			Returns `false` if the point is within *any* of the peers' active areas and `false` otherwise.
-
-			SpawnArea (e.g BonePileSpawner) uses `OutsideActiveArea` to determine if it should be simulated.
-		*/
-		{
-			static bool Prefix(ref bool __result, ZNetScene __instance, Vector3 point)
-			{
-				__result = true;
-				foreach (ZNetPeer znetPeer in ZNet.instance.GetPeers())
-				{
-					if (!__instance.OutsideActiveArea(point, znetPeer.GetRefPos()))
-					{
-						__result = false;
-					}
-				}
-				return false;
-			}
-		}
-
-
 		[HarmonyPatch(typeof(ZNetScene), "CreateDestroyObjects")]
 		private class CreateDestroyObjects_Patch
 		/*
+			The bread and butter of the mod, this patch facilitates spawning objects on the server.
+
 			Creates and destroys ZDOs by finding all objects in each peer area.
 
 			Some object overlap can happen if peers are close to each other, the objects are
 			deduplicated by using a HashSet, see `List.Distinct`.
 
-			This method originally only checked for objects in `ZNet.GetReferencePosition()`.
+			This method originally works only with objects surrounding `ZNet.GetReferencePosition()` which returns some
+			made-up nonsense on a dedicated server.
 
 			DistantObjects: Are objects that have `m_distant` set to `true`, set (probably) in the prefab data;
 			Distant objects are not affected by draw distance.
@@ -230,6 +207,16 @@ namespace Valheim_Serverside
 
 		[HarmonyPatch(typeof(RandEventSystem), "FixedUpdate")]
 		static class RandEventSystem_FixedUpdate_Patch
+		/*
+			Patches out m_localPlayer == null check by reversing the boolean check
+			and instead of:
+
+				if (this.IsInsideRandomEventArea(this.m_randomEvent, Player.m_localPlayer.transform.position))
+
+			reuses the previously-assigned playerInArea boolean.
+
+			Fixes monsters not spawning during events with this mod active.
+		*/
 		{
 			static Dictionary<OpCode, OpCode> StlocToLdloc = new Dictionary<OpCode, OpCode> {
 				{OpCodes.Stloc_0, OpCodes.Ldloc_0},
@@ -308,52 +295,17 @@ namespace Valheim_Serverside
 					yield return instruction;
 				}
 			}
-
-			/*static bool Prefix(RandEventSystem __instance, ref RandomEvent ___m_activeEvent, ref RandomEvent ___m_forcedEvent, ref RandomEvent ___m_randomEvent)
-			{
-				Traverse _t = new Traverse(__instance);
-				float fixedDeltaTime = Time.fixedDeltaTime;
-				_t.Method("UpdateForcedEvents", fixedDeltaTime).GetValue();
-				_t.Method("UpdateRandomEvent", fixedDeltaTime).GetValue();
-				if (___m_forcedEvent != null)
-				{
-					___m_forcedEvent.Update(ZNet.instance.IsServer(), ___m_forcedEvent == ___m_activeEvent, true, fixedDeltaTime);
-				}
-				if (___m_randomEvent != null && ZNet.instance.IsServer())
-				{
-					bool playerInArea = _t.Method("IsAnyPlayerInEventArea", ___m_randomEvent).GetValue<bool>();
-					if (___m_randomEvent.Update(true, ___m_randomEvent == ___m_activeEvent, playerInArea, fixedDeltaTime))
-					{
-						_t.Method("SetRandomEvent", new Type[] { typeof(RandomEvent), typeof(Vector3) }, new object[] { null, Vector3.zero }).GetValue();
-					}
-				}
-				if (___m_forcedEvent != null)
-				{
-					_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { ___m_forcedEvent, false }).GetValue();
-					return false;
-				}
-				if (___m_randomEvent == null *//* || !Player.m_localPlayer *//*)
-				{
-					_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { null, false }).GetValue();
-					return false;
-				}
-				foreach (Player player in Player.GetAllPlayers())
-				{
-					if (_t.Method("IsInsideRandomEventArea", ___m_randomEvent, player.transform.position).GetValue<bool>())
-					{
-						_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { ___m_randomEvent, false }).GetValue();
-						return false;
-					}
-				}
-				_t.Method("SetActiveEvent", new Type[] { typeof(RandomEvent), typeof(bool) }, new object[] { null, false }).GetValue();
-				return false;
-			}*/
 		}
 
 		[HarmonyPatch(typeof(SpawnSystem), "UpdateSpawning")]
 		static class SpawnSystem_UpdateSpawning_Patch
-		{
+		/*
+			Patches out m_localPlayer == null check in SpawnSystem.UpdateSpawning
+			by reversing the boolean check.
 
+			Fixes enemies not spawning during random events.
+		*/
+		{
 			static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> _instructions)
 			{
 				FieldInfo field_m_localPlayer = AccessTools.Field(typeof(Player), nameof(Player.m_localPlayer));
@@ -375,42 +327,41 @@ namespace Valheim_Serverside
 					yield return instruction;
 				}
 			}
-			//static bool Prefix(SpawnSystem __instance)
-			//{
-			//	Traverse _t = new Traverse(__instance);
-			//	ZNetView m_nview = _t.Field("m_nview").GetValue<ZNetView>();
-			//	if (!m_nview.IsValid() || !m_nview.IsOwner())
-			//	{
-			//		return false;
-			//	}
-			//	/*if (Player.m_localPlayer == null)
-			//	{
-			//		return false;
-			//	}*/
-			//	List<Player> m_nearPlayers = _t.Field("m_nearPlayers").GetValue<List<Player>>();
-			//	m_nearPlayers.Clear();
-			//	_t.Method("GetPlayersInZone", m_nearPlayers).GetValue();
-			//	if (m_nearPlayers.Count == 0)
-			//	{
-			//		return false;
-			//	}
-			//	DateTime time = ZNet.instance.GetTime();
-			//	_t.Method("UpdateSpawnList", __instance.m_spawners, time, false).GetValue();
-			//	List<SpawnSystem.SpawnData> currentSpawners = RandEventSystem.instance.GetCurrentSpawners();
-			//	if (currentSpawners != null)
-			//	{
-			//		_t.Method("UpdateSpawnList", currentSpawners, time, true).GetValue();
-			//	}
-			//	return false;
-			//}
+		}
+
+		[HarmonyPatch(typeof(ZNetScene), "OutsideActiveArea", new Type[] { typeof(Vector3) })]
+		private class ZNetScene_OutsideActiveArea_Patch
+		/*
+			Originally uses `ZNet.GetReferencePosition` to determine active area but with the server 
+			handling all areas, it must check if the `Vector3` is within any of the peers' active areas.
+
+			Returns `false` if the point is within *any* of the peers' active areas and `false` otherwise.
+
+			SpawnArea (e.g BonePileSpawner) uses `OutsideActiveArea` to determine if it should be simulated.
+		*/
+		{
+			static bool Prefix(ref bool __result, ZNetScene __instance, Vector3 point)
+			{
+				__result = true;
+				foreach (ZNetPeer znetPeer in ZNet.instance.GetPeers())
+				{
+					if (!__instance.OutsideActiveArea(point, znetPeer.GetRefPos()))
+					{
+						__result = false;
+					}
+				}
+				return false;
+			}
 		}
 
 		[HarmonyPatch(typeof(ZRoutedRpc), "RouteRPC")]
 		static class ZRoutedRpc_RouteRPC_Patch
 		/*
-		* When a client requests to be the "user" (driver) of a ship this RPC method
-		* is sent from the current ship owner when they accept the request.
-		* We set the owner of the ship to the new ship driver.
+			When a client requests to be the "user" (driver) of a ship this RPC method
+			is sent from the current ship owner when they accept the request.
+			We set the owner of the ship to the new ship driver.
+
+			Allows players to drive ships with no roundtrip latency.
 		*/
 		{
 			static void Prefix(ZRoutedRpc.RoutedRPCData rpcData)
@@ -430,17 +381,17 @@ namespace Valheim_Serverside
 		[HarmonyPatch(typeof(Ship), "UpdateOwner")]
 		static class Ship_UpdateOwner_Patch
 		/*
-		If the ship has no valid user, set the owner to the server
-		to ensure simulations are updated correctly.
+			If the ship has no valid user, set the owner to the server
+			to ensure simulations are updated correctly.
 		*/
 		{ 
 			static bool Prefix(ref Ship __instance) {
 				if (!__instance.m_shipControlls.HaveValidUser())
-                {
+				{
 					new Traverse(__instance).Field("m_nview").GetValue<ZNetView>().GetZDO().SetOwner(ZNet.instance.GetUID());
-                }
+				}
 				return true;
 			}
-        }
+		}
 	}
 }
