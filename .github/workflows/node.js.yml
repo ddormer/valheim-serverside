@@ -38,5 +38,5 @@ jobs:
         if [ -z "$(git status --porcelain)" ]; then
           exit 0
         fi
-        git commit -m "Update README.bbcode"
+        git commit README.bbcode -m "Update README.bbcode"
         git push github HEAD:${GITHUB_REF}
