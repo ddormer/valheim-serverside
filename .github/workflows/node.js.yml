@@ -35,7 +35,9 @@ jobs:
         git config --local user.name "$(git log --format='%an' HEAD^!)"
         git remote add github "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git"
         git pull github ${GITHUB_REF} --ff-only
-        if [ -z "$(git status --porcelain)" ]; then
+        git add README.bbcode
+        git status --porcelain
+        if [ -z "$(git diff-files --quiet README.bbcode)" ]; then
           exit 0
         fi
         git commit -m "Update README.bbcode"
