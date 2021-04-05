@@ -30,3 +30,7 @@ The dedicated server mod will forcefully take control of the objects in the worl
 ### Known issues
 
 - When a player goes through a portal, other players nearby may momentarily see the player appear on their location. This does not effect the mechanics of teleportation and appears to only be a visual glitch.
+
+#### For mod developers - compatibility with Serverside Simulations
+
+If you're a mod developer and you're interested in maintaining compatibility with server-side simulations, when spawning AI/Monsters, setting the owner to 0 will signal to the server that it should take ownership of that ZDO and allow simulations to be done on the server.
