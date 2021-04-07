@@ -39,9 +39,9 @@ namespace Valheim_Serverside
 		}
 
 		public static bool IsDedicated()
-        {
+		{
 			return new ZNet().IsDedicated();
-        }
+		}
 
 		public static void PrintLog(string text)
 		{
@@ -303,25 +303,24 @@ namespace Valheim_Serverside
 			Return spawners if there are nearby players in the event area.
 		*/
 		{
-			List<Player> players = new List<Player>();
-			ZNetView spawnSystem_m_nview = Traverse.Create(spawnSystem).Field("m_nview").GetValue<ZNetView>();
-
-			foreach (Player player in Player.GetAllPlayers())
-            {
-				if (ZNetScene.instance.InActiveArea(spawnSystem_m_nview.GetZDO().GetSector(), player.transform.position))
-                {
-					players.Add(player);
-				}
+			if (Traverse.Create(instance).Field("m_activeEvent").GetValue<ZNetView>() != null)
+			{
+				return null;
 			}
 
+			ZNetView spawnSystem_m_nview = Traverse.Create(spawnSystem).Field("m_nview").GetValue<ZNetView>();
 			RandomEvent randomEvent = Traverse.Create(instance).Field("m_randomEvent").GetValue<RandomEvent>();
-			foreach (Player player in players)
-            {
-				if (Traverse.Create(instance).Method("IsInsideRandomEventArea", new Type[] { typeof(RandomEvent), typeof(Vector3) }, new object[] { randomEvent, player.transform.position }).GetValue<bool>())
-                {
-					return instance.GetCurrentSpawners();
-                }
-            }
+
+			foreach (Player player in Player.GetAllPlayers())
+			{
+				if (ZNetScene.instance.InActiveArea(spawnSystem_m_nview.GetZDO().GetSector(), player.transform.position))
+				{
+					if (Traverse.Create(instance).Method("IsInsideRandomEventArea", new Type[] { typeof(RandomEvent), typeof(Vector3) }, new object[] { randomEvent, player.transform.position }).GetValue<bool>())
+					{
+						instance.GetCurrentSpawners();
+					}
+				}
+			}
 			return null;
 		}
 
@@ -358,17 +357,17 @@ namespace Valheim_Serverside
 				{
 					// Add SpawnSystem instance to stack after RandEventSystem instance.
 					if (loadRandEventSystemInstance.Check(instruction))
-                    {
+					{
 						yield return instruction;
 						yield return new CodeInstruction(OpCodes.Ldarg_0);
 						continue;
-                    }
+					}
 					// replace GetCurrentSpawners with call to our method.
 					if (getCurrentSpawners.Check(instruction))
-                    {
+					{
 						yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ServersidePlugin), "GetCurrentSpawners"));
 						continue;
-                    }
+					}
 					if (localPlayerCheck.Check(instruction))
 					{
 						yield return new CodeInstruction(OpCodes.Brtrue, instruction.operand);
