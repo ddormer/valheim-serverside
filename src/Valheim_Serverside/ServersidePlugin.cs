@@ -303,7 +303,7 @@ namespace Valheim_Serverside
 			Return spawners if there are nearby players in the event area.
 		*/
 		{
-			if (Traverse.Create(instance).Field("m_activeEvent").GetValue<ZNetView>() != null)
+			if (Traverse.Create(instance).Field("m_activeEvent").GetValue<RandomEvent>() == null)
 			{
 				return null;
 			}
@@ -317,7 +317,7 @@ namespace Valheim_Serverside
 				{
 					if (Traverse.Create(instance).Method("IsInsideRandomEventArea", new Type[] { typeof(RandomEvent), typeof(Vector3) }, new object[] { randomEvent, player.transform.position }).GetValue<bool>())
 					{
-						instance.GetCurrentSpawners();
+						return instance.GetCurrentSpawners();
 					}
 				}
 			}
