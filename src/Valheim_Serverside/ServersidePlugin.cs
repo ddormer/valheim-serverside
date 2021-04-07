@@ -298,6 +298,24 @@ namespace Valheim_Serverside
 			}
 		}
 
+		public static List<SpawnSystem.SpawnData> GetCurrentSpawners(RandEventSystem instance, SpawnSystem spawnSystem)
+		/*
+			Return spawners if there are nearby players in the event area.
+		*/
+		{
+			List<Player> players = Player.GetAllPlayers();
+			ZNetView spawnSystem_m_nview = Traverse.Create(spawnSystem).Field("m_nview").GetValue<ZNetView>();
+			RandomEvent randomEvent = Traverse.Create(instance).Field("m_randomEvent").GetValue<RandomEvent>();
+			foreach (Player player in players)
+            {
+				if (Traverse.Create(instance).Method("IsInsideRandomEventArea", randomEvent, player.transform.position).GetValue<bool>())
+                {
+					return instance.GetCurrentSpawners();
+                }
+            }
+			return null;
+		}
+
 		[HarmonyPatch(typeof(SpawnSystem), "UpdateSpawning")]
 		static class SpawnSystem_UpdateSpawning_Patch
 		/*
@@ -317,9 +335,31 @@ namespace Valheim_Serverside
 					new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(UnityEngine.Object), "op_Equality")),
 					new CodeInstruction(OpCodes.Brfalse)
 				}));
+				var loadRandEventSystemInstance = new SequentialInstructions(new List<CodeInstruction>(new CodeInstruction[]
+				{
+					new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SpawnSystem), "UpdateSpawnList")),
+					new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(RandEventSystem), "get_instance"))
+				}));
+				var getCurrentSpawners = new SequentialInstructions(new List<CodeInstruction>(new CodeInstruction[]
+				{
+					new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(RandEventSystem), nameof(RandEventSystem.GetCurrentSpawners))),
+				}));
 
 				foreach (CodeInstruction instruction in _instructions)
 				{
+					// Add SpawnSystem instance to stack after RandEventSystem instance.
+					if (loadRandEventSystemInstance.Check(instruction))
+                    {
+						yield return instruction;
+						yield return new CodeInstruction(OpCodes.Ldarg_0);
+						continue;
+                    }
+					// replace GetCurrentSpawners with call to our method.
+					if (getCurrentSpawners.Check(instruction))
+                    {
+						yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ServersidePlugin), "GetCurrentSpawners"));
+						continue;
+                    }
 					if (localPlayerCheck.Check(instruction))
 					{
 						yield return new CodeInstruction(OpCodes.Brtrue, instruction.operand);
