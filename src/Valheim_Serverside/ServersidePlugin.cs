@@ -20,11 +20,10 @@ namespace Valheim_Serverside
 
 		private void Awake()
 		{
-			bool isDedicated = new ZNet().IsDedicated();
 			context = this;
 			modEnabled = Config.Bind<bool>("General", "Enabled", true, "Enable or disable the mod");
 
-			if (!modEnabled.Value || !isDedicated)
+			if (!modEnabled.Value || !IsDedicated())
 			{
 				Logger.LogInfo("Serverside Simulations is disabled");
 				return;
@@ -35,12 +34,14 @@ namespace Valheim_Serverside
 		}
 
 		public static bool IsServer()
-		/*
-			Calls `ZNet.instance.IsServer` after checking if `ZNet.instance` exists.
-		*/
 		{
 			return ZNet.instance && ZNet.instance.IsServer();
 		}
+
+		public static bool IsDedicated()
+        {
+			return new ZNet().IsDedicated();
+        }
 
 		public static void PrintLog(string text)
 		{
