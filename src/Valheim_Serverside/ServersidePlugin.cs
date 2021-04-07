@@ -14,16 +14,16 @@ namespace Valheim_Serverside
 	[BepInPlugin("MVP.Valheim_Serverside_Simulations", "Serverside Simulations", "1.0.0")]
 	public class ServersidePlugin : BaseUnityPlugin
 	{
-		public static ConfigEntry<bool> modEnabled;
-
 		private static ServersidePlugin context;
+
+        private Configuration configuration;
 
 		private void Awake()
 		{
 			context = this;
-			modEnabled = Config.Bind<bool>("General", "Enabled", true, "Enable or disable the mod");
+			configuration = new Configuration(Config);
 
-			if (!modEnabled.Value || !IsDedicated())
+			if (!ModIsEnabled() || !IsDedicated())
 			{
 				Logger.LogInfo("Serverside Simulations is disabled");
 				return;
@@ -32,6 +32,11 @@ namespace Valheim_Serverside
 			Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), null);
 			Logger.LogInfo("Serverside Simulations installed");
 		}
+
+        private bool ModIsEnabled()
+        {
+			return configuration.modEnabled.Value;
+        }
 
 		public static bool IsServer()
 		{
@@ -292,7 +297,6 @@ namespace Valheim_Serverside
 						yield return new CodeInstruction(OpCodes.Brtrue, instruction.operand);
 						continue;
 					}
-
 					yield return instruction;
 				}
 			}
