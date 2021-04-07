@@ -11,7 +11,7 @@ using OpCodes = System.Reflection.Emit.OpCodes;
 
 namespace Valheim_Serverside
 {
-	[BepInPlugin("MVP.Valheim_Serverside_Simulations", "Serverside Simulations", "1.0.0.0")]
+	[BepInPlugin("MVP.Valheim_Serverside_Simulations", "Serverside Simulations", "1.0.0")]
 	public class ServersidePlugin : BaseUnityPlugin
 	{
 		public static ConfigEntry<bool> modEnabled;
