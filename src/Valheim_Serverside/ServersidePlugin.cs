@@ -303,12 +303,21 @@ namespace Valheim_Serverside
 			Return spawners if there are nearby players in the event area.
 		*/
 		{
-			List<Player> players = Player.GetAllPlayers();
+			List<Player> players = new List<Player>();
 			ZNetView spawnSystem_m_nview = Traverse.Create(spawnSystem).Field("m_nview").GetValue<ZNetView>();
+
+			foreach (Player player in Player.GetAllPlayers())
+            {
+				if (ZNetScene.instance.InActiveArea(spawnSystem_m_nview.GetZDO().GetSector(), player.transform.position))
+                {
+					players.Add(player);
+				}
+			}
+
 			RandomEvent randomEvent = Traverse.Create(instance).Field("m_randomEvent").GetValue<RandomEvent>();
 			foreach (Player player in players)
             {
-				if (Traverse.Create(instance).Method("IsInsideRandomEventArea", randomEvent, player.transform.position).GetValue<bool>())
+				if (Traverse.Create(instance).Method("IsInsideRandomEventArea", new Type[] { typeof(RandomEvent), typeof(Vector3) }, new object[] { randomEvent, player.transform.position }).GetValue<bool>())
                 {
 					return instance.GetCurrentSpawners();
                 }
