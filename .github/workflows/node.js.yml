@@ -42,4 +42,6 @@ jobs:
         git add README.bbcode
         git commit -m "Update README.bbcode"
         echo ${GITHUB_REF}
+        echo ${GITHUB_HEAD_REF}
+        echo ${GITHUB_BASE_REF}
         git push github HEAD:${GITHUB_REF}
