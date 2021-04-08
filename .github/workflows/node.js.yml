@@ -40,5 +40,5 @@ jobs:
         git add README.bbcode
         git commit -m "Update README.bbcode"
 
+        git push github HEAD:${GITHUB_HEAD_REF}
 
-        git push
