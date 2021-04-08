@@ -2,8 +2,6 @@
 
 Run world and monster simulations on a **dedicated server**.
 
-## WARNING: This mod is largely untested, so DO NOT use it on any worlds or characters you care about losing without first making backups.
-
 Updated for patch: 0.148.6
 
 ### Caveats
@@ -25,7 +23,7 @@ Ordinarily, to keep server resource usage low, Valheim will hand off simulation 
 
 ### How?
 
-The dedicated server mod will forcefully take control of the objects in the world and simulate them.
+The dedicated server mod will take control of the objects in the world, allowing the server to simulate them.
 
 ### Known issues
 
@@ -33,4 +31,4 @@ The dedicated server mod will forcefully take control of the objects in the worl
 
 #### For mod developers - compatibility with Serverside Simulations
 
-If you're a mod developer and you're interested in maintaining compatibility with server-side simulations, when spawning AI/Monsters, setting the owner to 0 will signal to the server that it should take ownership of that ZDO and allow simulations to be done on the server.
+For mod developers that are interested in maintaining compatibility with Serverside Simulations; The server often ends up owning ZDOs and terrain, thus any simulation code that would usually run on the client would also need to run on the server. Code using localPlayer or ZNet.instance.getReferencePosition() won't work on the server as there is no localPlayer and the reference position of the server is some made-up value, if your simulation code relies on player position then finding it from the connected peers might be a solution. Any graphical or hud-related code should probably be behind a ZNet.instance.IsDedicated() check, if that code is expected to run on the server.
