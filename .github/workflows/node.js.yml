@@ -11,7 +11,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -41,7 +40,10 @@ jobs:
         fi
         git add README.bbcode
         git commit -m "Update README.bbcode"
-        echo ${GITHUB_REF}
-        echo ${GITHUB_HEAD_REF}
-        echo ${GITHUB_BASE_REF}
+
+        if [ -n "${GITHUB_HEAD_REF}" ] ; then
+            git push github HEAD:${GITHUB_HEAD_REF}
+            exit 0
+        fi
+
         git push github HEAD:${GITHUB_REF}
