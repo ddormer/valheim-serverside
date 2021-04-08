@@ -42,6 +42,7 @@ jobs:
         git commit -m "Update README.bbcode"
 
         if [ -n "${GITHUB_HEAD_REF}" ] ; then
+            git pull github ${GITHUB_HEAD_REF} --ff-only
             git push github HEAD:${GITHUB_HEAD_REF}
             exit 0
         fi
