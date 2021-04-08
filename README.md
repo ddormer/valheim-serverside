@@ -34,5 +34,5 @@ This dedicated server mod causes terrain, monsters and other objects that are no
 For mod developers interested in maintaining compatibility with Serverside Simulations:
 - If your mod makes changes relating to simulation / behaviour of the world, it will need to be able run on the dedicated server and should take these points into account:
   - Player.m_localPlayer is always `null` on a dedicated server; your code should check for this.
-  - On a dedicated server, ZNet.instance.GetReferencePosition() returns a position outside of the world and is not related to any player position.
-  - Any graphical or hud-related code should probably be behind a ZNet.instance.IsDedicated() check, if that code is expected to run on the server.
+  - On a dedicated server, `ZNet.instance.GetReferencePosition()` returns a position outside of the world and is not related to any player position.
+  - Any graphical or hud-related code should probably be behind a `ZNet.instance.IsDedicated()` check, if that code is expected to run on the server.
