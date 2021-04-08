@@ -28,7 +28,6 @@ This dedicated server mod causes terrain, monsters and other objects that are no
 ### Known issues
 
 - When a player goes through a portal, other players nearby may momentarily see the player appear on their location. This does not effect the mechanics of teleportation and appears to only be a visual glitch.
-- Newly constructed 
 
 #### For mod developers - compatibility with Serverside Simulations
 
