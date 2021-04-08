@@ -37,8 +37,8 @@ For mod developers interested in maintaining compatibility with Serverside Simul
 [list]
 [*]If your mod makes changes relating to simulation / behaviour of the world, it will need to be able run on the dedicated server and should take these points into account:
 [list]
-[*]Player.m_localPlayer is always [code]null[/code] on a dedicated server; your code should check for this.
-[*]On a dedicated server, [code]ZNet.instance.GetReferencePosition()[/code] returns a position outside of the world and is not related to any player position.
-[*]Any graphical or hud-related code should probably be behind a [code]ZNet.instance.IsDedicated()[/code] check, if that code is expected to run on the server.
+[*]Player.m_localPlayer is always [font=monospace]null[/font] on a dedicated server; your code should check for this.
+[*]On a dedicated server, [font=monospace]ZNet.instance.GetReferencePosition()[/font] returns a position outside of the world and is not related to any player position.
+[*]Any graphical or hud-related code should probably be behind a [font=monospace]ZNet.instance.IsDedicated()[/font] check, if that code is expected to run on the server.
 [/list]
 [/list]
