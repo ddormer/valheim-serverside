@@ -38,6 +38,7 @@ jobs:
         git add README.bbcode
         git status --porcelain
         if `git diff-files --quiet README.bbcode` ; then
+          echo "No README changes found, exiting."
           exit 0
         fi
         git commit -m "Update README.bbcode"
