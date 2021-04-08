@@ -16,7 +16,7 @@ namespace Valheim_Serverside
 	{
 		private static ServersidePlugin context;
 
-        private Configuration configuration;
+		private Configuration configuration;
 
 		private void Awake()
 		{
@@ -33,10 +33,10 @@ namespace Valheim_Serverside
 			Logger.LogInfo("Serverside Simulations installed");
 		}
 
-        private bool ModIsEnabled()
-        {
+		private bool ModIsEnabled()
+		{
 			return configuration.modEnabled.Value;
-        }
+		}
 
 		public static bool IsServer()
 		{
@@ -44,9 +44,9 @@ namespace Valheim_Serverside
 		}
 
 		public static bool IsDedicated()
-        {
+		{
 			return new ZNet().IsDedicated();
-        }
+		}
 
 		public static void PrintLog(string text)
 		{
