@@ -467,20 +467,17 @@ namespace Valheim_Serverside
 					.MatchForward(true,
 						// uint ownerRevision
 						new CodeMatch(i => i.IsLdarg()),
-						new CodeMatch(OpCodes.Callvirt,
-											AccessTools.Method(typeof(ZPackage), "ReadUInt")),
+						new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ZPackage), "ReadUInt")),
 						new CodeMatch(i => i.IsStloc(), "stOwnerRevision"),
 
 						// uint dataRevision
 						new CodeMatch(i => i.IsLdarg()),
-						new CodeMatch(OpCodes.Callvirt,
-											AccessTools.Method(typeof(ZPackage), "ReadUInt")),
+						new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ZPackage), "ReadUInt")),
 						new CodeMatch(i => i.IsStloc(), "stDataRevision"),
 
 						// long owner
 						new CodeMatch(i => i.IsLdarg()),
-						new CodeMatch(OpCodes.Callvirt,
-											AccessTools.Method(typeof(ZPackage), "ReadLong")),
+						new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ZPackage), "ReadLong")),
 						new CodeMatch(i => i.IsStloc(), "stOwner")
 					);
 				stOwnerRevision = matcher.NamedMatch("stOwnerRevision");
@@ -489,8 +486,7 @@ namespace Valheim_Serverside
 
 				matcher = matcher
 					.MatchForward(true,
-						new CodeMatch(OpCodes.Call,
-									  AccessTools.Method(typeof(ZDOMan), "CreateNewZDO", new Type[] { typeof(ZDOID), typeof(Vector3) })),
+						new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(ZDOMan), "CreateNewZDO", new Type[] { typeof(ZDOID), typeof(Vector3) })),
 						new CodeMatch(i => i.IsStloc(), "stZDO"),
 						new CodeMatch(OpCodes.Ldc_I4_1),
 						new CodeMatch(i => i.IsStloc(), "stZDOIsNew")
@@ -526,14 +522,12 @@ namespace Valheim_Serverside
 					.SetInstructionAndAdvance(CloneStlocToLdloc(stDataRevision))
 					.SetInstructionAndAdvance(CloneStlocToLdloc(stOwner))
 					.SetInstructionAndAdvance(CloneStlocToLdloc(stZpkg))
-					.SetInstructionAndAdvance(new CodeInstruction(OpCodes.Call,
-																  AccessTools.Method(typeof(ZNetScene_RPC_ZDOData_Patch), "DeserializeIntercept")))
+					.SetInstructionAndAdvance(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ZNetScene_RPC_ZDOData_Patch), "DeserializeIntercept")))
 					// seek to start of Deserialize call
 					.MatchForward(false,
 						new CodeMatch(i => i.IsLdloc()),
 						new CodeMatch(i => i.IsLdloc()),
-						new CodeMatch(OpCodes.Callvirt,
-									  AccessTools.Method(typeof(ZDO), "Deserialize"))
+						new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ZDO), "Deserialize"))
 					)
 					// replace Deserialize call with Nops
 					.SetAndAdvance(OpCodes.Nop, null)
