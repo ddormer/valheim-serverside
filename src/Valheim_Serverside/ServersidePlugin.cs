@@ -407,26 +407,6 @@ namespace Valheim_Serverside
 			}
 		}
 
-		//HashSet<ZDO> m_newZDOsThisFrame = new HashSet<ZDO>();
-
-		//[HarmonyPatch(typeof(ZDO), "Deserialize")]
-		//static class ZDO_Deserialize_Patch
-		//{
-		//	static void Postfix(ZDO __instance, ref long ___m_owner, ref uint ___m_ownerRevision)
-		//	{
-		//		long uid = ZNet.instance.GetUID();
-		//		if (context.m_newZDOsThisFrame.Contains(__instance) && ___m_owner != uid)
-		//		{
-		//			int prefabHash = __instance.GetPrefab();
-		//			GameObject prefab = ZNetScene.instance.GetPrefab(prefabHash);
-		//			if (prefab != null && prefab.GetComponent<Player>() != null) {
-		//				___m_owner = uid;
-		//				___m_ownerRevision++;
-		//			}
-		//		}
-		//	}
-		//}
-
 		[HarmonyPatch(typeof(ZDOMan), "RPC_ZDOData")]
 		static class ZNetScene_RPC_ZDOData_Patch
 		/*
