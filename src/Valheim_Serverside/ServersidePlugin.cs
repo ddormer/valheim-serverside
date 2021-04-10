@@ -18,6 +18,15 @@ namespace Valheim_Serverside
 
 		private Configuration configuration;
 
+		static Dictionary<OpCode, OpCode> StlocToLdloc = new Dictionary<OpCode, OpCode> {
+			{OpCodes.Stloc_0, OpCodes.Ldloc_0},
+			{OpCodes.Stloc_1, OpCodes.Ldloc_1},
+			{OpCodes.Stloc_2, OpCodes.Ldloc_2},
+			{OpCodes.Stloc_3, OpCodes.Ldloc_3},
+			{OpCodes.Stloc_S, OpCodes.Ldloc_S},
+			{OpCodes.Stloc, OpCodes.Ldloc}
+		};
+
 		private void Awake()
 		{
 			context = this;
@@ -224,15 +233,6 @@ namespace Valheim_Serverside
 			Fixes monsters not spawning during events with this mod active.
 		*/
 		{
-			static Dictionary<OpCode, OpCode> StlocToLdloc = new Dictionary<OpCode, OpCode> {
-				{OpCodes.Stloc_0, OpCodes.Ldloc_0},
-				{OpCodes.Stloc_1, OpCodes.Ldloc_1},
-				{OpCodes.Stloc_2, OpCodes.Ldloc_2},
-				{OpCodes.Stloc_3, OpCodes.Ldloc_3},
-				{OpCodes.Stloc_S, OpCodes.Ldloc_S},
-				{OpCodes.Stloc, OpCodes.Ldloc}
-			};
-
 			static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> _instructions)
 			{
 				//var codes = new List<CodeInstruction>(instructions);
@@ -404,6 +404,273 @@ namespace Valheim_Serverside
 					}
 				}
 				return false;
+			}
+		}
+
+		//HashSet<ZDO> m_newZDOsThisFrame = new HashSet<ZDO>();
+
+		//[HarmonyPatch(typeof(ZDO), "Deserialize")]
+		//static class ZDO_Deserialize_Patch
+		//{
+		//	static void Postfix(ZDO __instance, ref long ___m_owner, ref uint ___m_ownerRevision)
+		//	{
+		//		long uid = ZNet.instance.GetUID();
+		//		if (context.m_newZDOsThisFrame.Contains(__instance) && ___m_owner != uid)
+		//		{
+		//			int prefabHash = __instance.GetPrefab();
+		//			GameObject prefab = ZNetScene.instance.GetPrefab(prefabHash);
+		//			if (prefab != null && prefab.GetComponent<Player>() != null) {
+		//				___m_owner = uid;
+		//				___m_ownerRevision++;
+		//			}
+		//		}
+		//	}
+		//}
+
+		[HarmonyPatch(typeof(ZDOMan), "RPC_ZDOData")]
+		static class ZNetScene_RPC_ZDOData_Patch
+		/*
+					
+		*/
+		{
+			static void DeserializeIntercept(ZDO zdo, bool isNew, uint ownerRevision, uint dataRevision, long owner, ZPackage zpkg)
+			{
+				zdo.Deserialize(zpkg);
+				zdo.m_dataRevision = dataRevision;
+				long myid = ZNet.instance.GetUID();
+				if (isNew && owner != 0L && owner != myid)
+				{
+					int prefabHash = zdo.GetPrefab();
+					GameObject prefab = ZNetScene.instance.GetPrefab(prefabHash);
+					// Only take control of building pieces for now
+					// TODO: See if this should be expanded
+					if (prefab != null && prefab.GetComponent<Piece>() != null)
+					{
+						#if DEBUG
+							context.Logger.LogInfo($"Taking ownership of new ZDO (player id: ${owner} id: {zdo.m_uid} name: {prefab.name}");
+						#endif
+						zdo.m_owner = myid;
+						zdo.m_ownerRevision = ownerRevision + 1;
+						return;
+					}
+				}
+				zdo.m_owner = owner;
+				zdo.m_ownerRevision = ownerRevision;
+			}
+
+			static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> _instructions)
+			{
+				var check_readDataOwnerRevOwner = new SequentialInstructions(new List<CodeInstruction>(new CodeInstruction[]
+				{
+					// uint ownerRevision
+					new CodeInstruction(OpCodes.Ldarg_2),
+					new CodeInstruction(OpCodes.Callvirt,
+										AccessTools.Method(typeof(ZPackage), "ReadUInt")),
+					new CodeInstruction(OpCodes.Stloc_S),
+
+					// uint dataRevision
+					new CodeInstruction(OpCodes.Ldarg_2),
+					new CodeInstruction(OpCodes.Callvirt,
+										AccessTools.Method(typeof(ZPackage), "ReadUInt")),
+					new CodeInstruction(OpCodes.Stloc_S),
+
+					// long owner
+					new CodeInstruction(OpCodes.Ldarg_2),
+					new CodeInstruction(OpCodes.Callvirt,
+										AccessTools.Method(typeof(ZPackage), "ReadLong")),
+					new CodeInstruction(OpCodes.Stloc_S),
+				}));
+
+				var newZDOResultCheck = new SequentialInstructions(new List<CodeInstruction>(new CodeInstruction[]
+				{
+					new CodeInstruction(OpCodes.Call,
+										AccessTools.Method(typeof(ZDOMan), "CreateNewZDO", new Type[] { typeof(ZDOID), typeof(Vector3) })),
+					// ZDO zdo
+					new CodeInstruction(OpCodes.Stloc_S),
+					new CodeInstruction(OpCodes.Ldc_I4_1),
+					// bool flag
+					new CodeInstruction(OpCodes.Stloc_S)
+				}));
+
+				var zdoFieldsCheck = new SequentialInstructions(new List<CodeInstruction>(new CodeInstruction[]
+				{
+					// ZDO zdo
+					new CodeInstruction(OpCodes.Ldloc_S),
+					// uint ownerRevision
+					new CodeInstruction(OpCodes.Ldloc_S),
+					new CodeInstruction(OpCodes.Stfld, AccessTools.Field(typeof(ZDO), "m_ownerRevision")),
+					// ZDO zdo
+					new CodeInstruction(OpCodes.Ldloc_S),
+					// uint dataRevision
+					new CodeInstruction(OpCodes.Ldloc_S),
+					new CodeInstruction(OpCodes.Stfld, AccessTools.Field(typeof(ZDO), "m_dataRevision")),
+					// ZDO zdo
+					new CodeInstruction(OpCodes.Ldloc_S),
+					// long owner
+					new CodeInstruction(OpCodes.Ldloc_S),
+					new CodeInstruction(OpCodes.Stfld, AccessTools.Field(typeof(ZDO), "m_owner"))
+				}));
+
+				var check_Deserialize = new SequentialInstructions(new List<CodeInstruction>(new CodeInstruction[]
+				{
+					new CodeInstruction(OpCodes.Ldloc_S),
+					new CodeInstruction(OpCodes.Ldloc_3),
+					new CodeInstruction(OpCodes.Callvirt,
+										AccessTools.Method(typeof(ZDO), "Deserialize")),
+				}));
+
+				List<CodeInstruction> instructions = _instructions.ToList();
+				List<CodeInstruction> newInstructions = new List<CodeInstruction>();
+
+				CodeInstruction ldOwnerRevision = null;
+				CodeInstruction ldDataRevision = null;
+				CodeInstruction ldOwner = null;
+				CodeInstruction ldZpkg = null;
+
+				CodeInstruction ldZDOWasCreated = null;
+				CodeInstruction ldZDO = null;
+
+				ConstructorInfo ZPackageCtorInfo = typeof(ZPackage).GetConstructor(new Type[] { });
+
+				bool foundCtorInfo = false;
+				for (int i = 0; i < instructions.Count; i++)
+				{
+					CodeInstruction instruction = instructions[i];
+					if (instruction.opcode == OpCodes.Newobj && instruction.OperandIs(ZPackageCtorInfo))
+					{
+						CodeInstruction stZpkg = instructions[i + 1];
+						if (!stZpkg.IsStloc())
+						{
+							throw new Exception("Could not find location of zpkg2.");
+						}
+						ldZpkg = stZpkg.Clone(StlocToLdloc[stZpkg.opcode]);
+
+						
+						newInstructions.AddRange(instructions.GetRange(0, i + 1));
+						instructions.RemoveRange(0, i + 1);
+						foundCtorInfo = true;
+						break;
+					}
+				}
+				
+				if (!foundCtorInfo)
+				{
+					throw new Exception("Could find match for ZPackage ctor.");
+				}
+
+				for (int i = 0; i < instructions.Count; i++)
+				{
+					CodeInstruction instruction = instructions[i];
+					if (check_readDataOwnerRevOwner.Check(instruction))
+					{
+						CodeInstruction stOwnerRevision = instructions[i - 6];
+						CodeInstruction stDataRevision = instructions[i - 3];
+						CodeInstruction stOwner = instruction;
+						ldOwnerRevision = stOwnerRevision.Clone(StlocToLdloc[stOwnerRevision.opcode]);
+						ldDataRevision = stDataRevision.Clone(StlocToLdloc[stDataRevision.opcode]);
+						ldOwner = stOwner.Clone(StlocToLdloc[stOwner.opcode]);
+						newInstructions.Add(instruction);
+						instructions.RemoveRange(0, i + 1);
+						break;
+					}
+					newInstructions.Add(instruction);
+				}
+
+				for (int i = 0; i < instructions.Count; i++)
+				{
+					CodeInstruction instruction = instructions[i];
+					if (newZDOResultCheck.Check(instruction))
+					{
+						ldZDOWasCreated = new CodeInstruction(StlocToLdloc[instruction.opcode], instruction.operand);
+						var stZDO = instructions[i - 2];
+						ldZDO = new CodeInstruction(StlocToLdloc[stZDO.opcode], stZDO.operand);
+						newInstructions.Add(instruction);
+						instructions.RemoveRange(0, i + 1);
+						break;
+					}
+					newInstructions.Add(instruction);
+				}
+
+				for (int i = 0; i < instructions.Count; i++)
+				{
+					CodeInstruction instruction = instructions[i];
+					if (zdoFieldsCheck.Check(instruction))
+					{
+						int numInstructions = zdoFieldsCheck.Sequential.Count;
+
+						// Add preceding instructions minus the block we've matched
+						newInstructions.AddRange(instructions.GetRange(0, i - numInstructions + 1));
+
+						// Replace removed block with Nops to not mess up label order
+						for (int x = 0; x < numInstructions; x++)
+						{
+							var ins = instructions[i - numInstructions + 1 + x];
+							ins.opcode = OpCodes.Nop;
+							ins.operand = null;
+						}
+
+						CodeInstruction callDeserializeIntercept = new CodeInstruction(OpCodes.Call,
+																					   AccessTools.Method(typeof(ZNetScene_RPC_ZDOData_Patch), "DeserializeIntercept"));
+
+						int baseIdx = i - 6;
+						ldZDO.labels                    = instructions[baseIdx + 0].labels;
+						ldZDOWasCreated.labels          = instructions[baseIdx + 1].labels;
+						ldOwnerRevision.labels          = instructions[baseIdx + 2].labels;
+						ldDataRevision.labels           = instructions[baseIdx + 3].labels;
+						ldOwner.labels                  = instructions[baseIdx + 4].labels;
+						ldZpkg.labels                   = instructions[baseIdx + 5].labels;
+						callDeserializeIntercept.labels = instructions[baseIdx + 6].labels;
+
+						for (int x = baseIdx - (numInstructions - 7); x < baseIdx; x++)
+						{
+							newInstructions.Add(instructions[x]);
+						}
+
+						// Arg: ZPackage pkg
+						newInstructions.Add(ldZDO);
+						newInstructions.Add(ldZDOWasCreated);
+						newInstructions.Add(ldOwnerRevision);
+						newInstructions.Add(ldDataRevision);
+						newInstructions.Add(ldOwner);
+						newInstructions.Add(ldZpkg);
+						newInstructions.Add(callDeserializeIntercept);
+
+						// Remove matched instructions from buffer
+						instructions.RemoveRange(0, i + 1);
+						break;
+					}
+				}
+
+				for (int i = 0; i < instructions.Count; i++)
+				{
+					CodeInstruction instruction = instructions[i];
+					if (check_Deserialize.Check(instruction))
+					{
+						int numInstructions = check_Deserialize.Sequential.Count;
+
+						// Add preceding instructions minus the block we've matched
+						newInstructions.AddRange(instructions.GetRange(0, i - numInstructions + 1));
+
+						for (int x = 0; x < numInstructions; x++)
+						{
+							var ins = instructions[i - numInstructions + 1 + x];
+							ins.opcode = OpCodes.Nop;
+							ins.operand = null;
+							newInstructions.Add(ins);
+						}
+
+						// Remove matched instructions from buffer
+						instructions.RemoveRange(0, i + 1);
+
+						// Add the rest of the instructions
+						newInstructions.AddRange(instructions);
+
+						// We're done
+						break;
+					}
+				}
+
+				return newInstructions.AsEnumerable();
 			}
 		}
 
