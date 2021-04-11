@@ -7,7 +7,14 @@ using System.Reflection;
 using System.Reflection.Emit;
 using BepInEx.Configuration;
 using UnityEngine;
+
+using MonoMod.Cil;
+using Mono.Cecil.Cil;
+using MonoMod.Utils;
+
 using OpCodes = System.Reflection.Emit.OpCodes;
+using OpCode = System.Reflection.Emit.OpCode;
+using OC = Mono.Cecil.Cil.OpCodes;
 
 namespace Valheim_Serverside
 {
@@ -39,6 +46,8 @@ namespace Valheim_Serverside
 			}
 
 			Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), null);
+			IL.ZDOMan.RPC_ZDOData += ZDOMan_RPC_ZDODataPatch.Transpiler;
+			IL.RandEventSystem.FixedUpdate += _RandEventSystem_FixedUpdate_Patch.Transpiler;
 			Logger.LogInfo("Serverside Simulations installed");
 		}
 
@@ -407,13 +416,9 @@ namespace Valheim_Serverside
 			}
 		}
 
-		[HarmonyPatch(typeof(ZDOMan), "RPC_ZDOData")]
-		static class ZNetScene_RPC_ZDOData_Patch
-		/*
-					
-		*/
+		private class ZDOMan_RPC_ZDODataPatch
 		{
-			static void DeserializeIntercept(ZDO zdo, bool isNew, uint ownerRevision, uint dataRevision, long owner, ZPackage zpkg)
+			static void DeserializeAndCheckOwner(ZDO zdo, bool isNew, uint ownerRevision, uint dataRevision, long owner, ZPackage zpkg)
 			{
 				zdo.Deserialize(zpkg);
 				zdo.m_dataRevision = dataRevision;
@@ -427,7 +432,7 @@ namespace Valheim_Serverside
 					if (prefab != null && prefab.GetComponent<Piece>() != null)
 					{
 						#if DEBUG
-							context.Logger.LogInfo($"Taking ownership of new ZDO (player id: ${owner} id: {zdo.m_uid} name: {prefab.name}");
+						context.Logger.LogInfo($"Taking ownership of new ZDO (player id: {owner} id: {zdo.m_uid} name: {prefab.name}");
 						#endif
 						zdo.m_owner = myid;
 						zdo.m_ownerRevision = ownerRevision + 1;
@@ -438,103 +443,67 @@ namespace Valheim_Serverside
 				zdo.m_ownerRevision = ownerRevision;
 			}
 
-			private static CodeInstruction CloneStlocToLdloc(CodeInstruction instruction)
+			public static void Transpiler(ILContext il)
 			{
-				if (!instruction.IsStloc()) {
-					throw new ArgumentException($"instruction opcode must be of type Stloc, got {instruction.opcode}");
-				}
-				return instruction.Clone(StlocToLdloc[instruction.opcode]);
-			}
+				int idx_stZpkg = 0;
+				int idx_stOwnerRevision = 0;
+				int idx_stDataRevision = 0;
+				int idx_stOwner = 0;
+				int idx_stZDO = 0;
+				int idx_stZDOIsNew = 0;
 
-			static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> _instructions)
-			{
-				CodeInstruction stOwnerRevision;
-				CodeInstruction stDataRevision;
-				CodeInstruction stOwner;
-				CodeInstruction stZpkg;
-
-				CodeInstruction stZDOIsNew;
-				CodeInstruction stZDO;
-
-				var matcher = new CodeMatcher(_instructions)
-					.MatchForward(true,
-						new CodeMatch(OpCodes.Newobj, typeof(ZPackage).GetConstructor(new Type[] { })),
-						new CodeMatch(i => i.IsStloc(), "stZpkg")
-					);
-				stZpkg = matcher.NamedMatch("stZpkg");
-
-				matcher = matcher
-					.MatchForward(true,
-						// uint ownerRevision
-						new CodeMatch(i => i.IsLdarg()),
-						new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ZPackage), "ReadUInt")),
-						new CodeMatch(i => i.IsStloc(), "stOwnerRevision"),
-
-						// uint dataRevision
-						new CodeMatch(i => i.IsLdarg()),
-						new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ZPackage), "ReadUInt")),
-						new CodeMatch(i => i.IsStloc(), "stDataRevision"),
-
-						// long owner
-						new CodeMatch(i => i.IsLdarg()),
-						new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ZPackage), "ReadLong")),
-						new CodeMatch(i => i.IsStloc(), "stOwner")
-					);
-				stOwnerRevision = matcher.NamedMatch("stOwnerRevision");
-				stDataRevision = matcher.NamedMatch("stDataRevision");
-				stOwner = matcher.NamedMatch("stOwner");
-
-				matcher = matcher
-					.MatchForward(true,
-						new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(ZDOMan), "CreateNewZDO", new Type[] { typeof(ZDOID), typeof(Vector3) })),
-						new CodeMatch(i => i.IsStloc(), "stZDO"),
-						new CodeMatch(OpCodes.Ldc_I4_1),
-						new CodeMatch(i => i.IsStloc(), "stZDOIsNew")
-					);
-				stZDO = matcher.NamedMatch("stZDO");
-				stZDOIsNew = matcher.NamedMatch("stZDOIsNew");
-
-				matcher = matcher
-					.MatchForward(false,
-						// ZDO zdo
-						new CodeMatch(i => i.IsLdloc()),
-						// uint ownerRevision
-						new CodeMatch(i => i.IsLdloc()),
-						new CodeMatch(OpCodes.Stfld, AccessTools.Field(typeof(ZDO), "m_ownerRevision")),
-						// ZDO zdo
-						new CodeMatch(i => i.IsLdloc()),
-						// uint dataRevision
-						new CodeMatch(i => i.IsLdloc()),
-						new CodeMatch(OpCodes.Stfld, AccessTools.Field(typeof(ZDO), "m_dataRevision")),
-						// ZDO zdo
-						new CodeMatch(i => i.IsLdloc()),
-						// long owner
-						new CodeMatch(i => i.IsLdloc()),
-						new CodeMatch(OpCodes.Stfld, AccessTools.Field(typeof(ZDO), "m_owner"))
-					);
-				
-				matcher = matcher
-					.SetAndAdvance(OpCodes.Nop, null)
-					.SetAndAdvance(OpCodes.Nop, null)
-					.SetInstructionAndAdvance(CloneStlocToLdloc(stZDO))
-					.SetInstructionAndAdvance(CloneStlocToLdloc(stZDOIsNew))
-					.SetInstructionAndAdvance(CloneStlocToLdloc(stOwnerRevision))
-					.SetInstructionAndAdvance(CloneStlocToLdloc(stDataRevision))
-					.SetInstructionAndAdvance(CloneStlocToLdloc(stOwner))
-					.SetInstructionAndAdvance(CloneStlocToLdloc(stZpkg))
-					.SetInstructionAndAdvance(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ZNetScene_RPC_ZDOData_Patch), "DeserializeIntercept")))
-					// seek to start of Deserialize call
-					.MatchForward(false,
-						new CodeMatch(i => i.IsLdloc()),
-						new CodeMatch(i => i.IsLdloc()),
-						new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ZDO), "Deserialize"))
+				new ILCursor(il)
+					.GotoNext(
+						i => i.MatchNewobj<ZPackage>(),
+						i => i.MatchStloc(out idx_stZpkg)
 					)
-					// replace Deserialize call with Nops
-					.SetAndAdvance(OpCodes.Nop, null)
-					.SetAndAdvance(OpCodes.Nop, null)
-					.SetAndAdvance(OpCodes.Nop, null);
-
-				return matcher.InstructionEnumeration();
+					.GotoNext(
+						i => i.MatchLdarg(2),
+						i => i.MatchCallvirt<ZPackage>("ReadUInt"),
+						i => i.MatchStloc(out idx_stOwnerRevision),
+						i => i.MatchLdarg(2),
+						i => i.MatchCallvirt<ZPackage>("ReadUInt"),
+						i => i.MatchStloc(out idx_stDataRevision),
+						i => i.MatchLdarg(2),
+						i => i.MatchCallvirt<ZPackage>("ReadLong"),
+						i => i.MatchStloc(out idx_stOwner)
+					)
+					.GotoNext(
+						i => i.MatchCall<ZDOMan>("CreateNewZDO"),
+						i => i.MatchStloc(out idx_stZDO),
+						i => i.MatchLdcI4(out var _i),
+						i => i.MatchStloc(out idx_stZDOIsNew)
+					)
+					.GotoNext(MoveType.Before,
+						i => i.MatchLdloc(out var _i),
+						i => i.MatchLdloc(out var _i),
+						i => i.MatchStfld<ZDO>("m_ownerRevision"),
+						i => i.MatchLdloc(out var _i),
+						i => i.MatchLdloc(out var _i),
+						i => i.MatchStfld<ZDO>("m_dataRevision"),
+						i => i.MatchLdloc(out var _i),
+						i => i.MatchLdloc(out var _i),
+						i => i.MatchStfld<ZDO>("m_owner")
+					)
+					.Emit(OC.Nop)
+					.Emit(OC.Nop)
+					.Emit(OC.Ldloc, idx_stZDO)
+					.Emit(OC.Ldloc, idx_stZDOIsNew)
+					.Emit(OC.Ldloc, idx_stOwnerRevision)
+					.Emit(OC.Ldloc, idx_stDataRevision)
+					.Emit(OC.Ldloc, idx_stOwner)
+					.Emit(OC.Ldloc, idx_stZpkg)
+					.Emit(OC.Call, AccessTools.Method(typeof(ZDOMan_RPC_ZDODataPatch), 
+													  nameof(ZDOMan_RPC_ZDODataPatch.DeserializeAndCheckOwner)))
+					// seek to start of ZDO.Deserialize call
+					.GotoNext(MoveType.Before,
+						i => i.MatchLdloc(out var _i),
+						i => i.MatchLdloc(out var _i),
+						i => i.MatchCallvirt<ZDO>("Deserialize")
+					)
+					// Remove ZDO.Deserialize call as we need it to happen before the ZDOPeer.ZDOPeerInfo ctor
+					.RemoveRange(3)
+				 ;
 			}
 		}
 
