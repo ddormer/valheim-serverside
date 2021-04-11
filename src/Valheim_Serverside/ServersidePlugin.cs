@@ -417,11 +417,10 @@ namespace Valheim_Serverside
 
 		private class ZDOMan_RPC_ZDODataPatch
 		{
-			static void DeserializeAndCheckOwner(ZDO zdo, bool isNew, uint ownerRevision, uint dataRevision, long owner, ZPackage zpkg)
+			static void CheckShouldOwn(ZDO zdo, bool isNew)
 			{
-				zdo.Deserialize(zpkg);
-				zdo.m_dataRevision = dataRevision;
 				long myid = ZNet.instance.GetUID();
+				long owner = zdo.m_owner;
 				if (isNew && owner != 0L && owner != myid)
 				{
 					int prefabHash = zdo.GetPrefab();
@@ -433,76 +432,35 @@ namespace Valheim_Serverside
 						#if DEBUG
 						context.Logger.LogInfo($"Taking ownership of new ZDO (player id: {owner} id: {zdo.m_uid} name: {prefab.name}");
 						#endif
-						zdo.m_owner = myid;
-						zdo.m_ownerRevision = ownerRevision + 1;
+						zdo.SetOwner(myid);
 						return;
 					}
 				}
-				zdo.m_owner = owner;
-				zdo.m_ownerRevision = ownerRevision;
 			}
 
 			public static void Transpiler(ILContext il)
 			{
-				int idx_stZpkg = 0;
-				int idx_stOwnerRevision = 0;
-				int idx_stDataRevision = 0;
-				int idx_stOwner = 0;
 				int idx_stZDO = 0;
 				int idx_stZDOIsNew = 0;
 
 				new ILCursor(il)
-					.GotoNext(
-						i => i.MatchNewobj<ZPackage>(),
-						i => i.MatchStloc(out idx_stZpkg)
-					)
-					.GotoNext(
-						i => i.MatchLdarg(2),
-						i => i.MatchCallvirt<ZPackage>("ReadUInt"),
-						i => i.MatchStloc(out idx_stOwnerRevision),
-						i => i.MatchLdarg(2),
-						i => i.MatchCallvirt<ZPackage>("ReadUInt"),
-						i => i.MatchStloc(out idx_stDataRevision),
-						i => i.MatchLdarg(2),
-						i => i.MatchCallvirt<ZPackage>("ReadLong"),
-						i => i.MatchStloc(out idx_stOwner)
-					)
 					.GotoNext(
 						i => i.MatchCall<ZDOMan>("CreateNewZDO"),
 						i => i.MatchStloc(out idx_stZDO),
 						i => i.MatchLdcI4(out var _i),
 						i => i.MatchStloc(out idx_stZDOIsNew)
 					)
-					.GotoNext(MoveType.Before,
-						i => i.MatchLdloc(out var _i),
-						i => i.MatchLdloc(out var _i),
-						i => i.MatchStfld<ZDO>("m_ownerRevision"),
-						i => i.MatchLdloc(out var _i),
-						i => i.MatchLdloc(out var _i),
-						i => i.MatchStfld<ZDO>("m_dataRevision"),
-						i => i.MatchLdloc(out var _i),
-						i => i.MatchLdloc(out var _i),
-						i => i.MatchStfld<ZDO>("m_owner")
-					)
-					.Emit(OC.Nop)
-					.Emit(OC.Nop)
-					.Emit(OC.Ldloc, idx_stZDO)
-					.Emit(OC.Ldloc, idx_stZDOIsNew)
-					.Emit(OC.Ldloc, idx_stOwnerRevision)
-					.Emit(OC.Ldloc, idx_stDataRevision)
-					.Emit(OC.Ldloc, idx_stOwner)
-					.Emit(OC.Ldloc, idx_stZpkg)
-					.Emit(OC.Call, AccessTools.Method(typeof(ZDOMan_RPC_ZDODataPatch), 
-													  nameof(ZDOMan_RPC_ZDODataPatch.DeserializeAndCheckOwner)))
 					// seek to start of ZDO.Deserialize call
-					.GotoNext(MoveType.Before,
+					.GotoNext(MoveType.After,
 						i => i.MatchLdloc(out var _i),
 						i => i.MatchLdloc(out var _i),
 						i => i.MatchCallvirt<ZDO>("Deserialize")
 					)
-					// Remove ZDO.Deserialize call as we need it to happen before the ZDOPeer.ZDOPeerInfo ctor
-					.RemoveRange(3)
-				 ;
+					.Emit(OC.Ldloc, idx_stZDO)
+					.Emit(OC.Ldloc, idx_stZDOIsNew)
+					.Emit(OC.Call, AccessTools.Method(typeof(ZDOMan_RPC_ZDODataPatch),
+													  nameof(ZDOMan_RPC_ZDODataPatch.CheckShouldOwn)))
+				;
 			}
 		}
 
