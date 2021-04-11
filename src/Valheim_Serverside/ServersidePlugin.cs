@@ -447,12 +447,12 @@ namespace Valheim_Serverside
 					.GotoNext(
 						i => i.MatchCall<ZDOMan>("CreateNewZDO"),
 						i => i.MatchStloc(out idx_stZDO),
-						i => i.MatchLdcI4(out var _i),
+						i => i.MatchLdcI4(out _),
 						i => i.MatchStloc(out idx_stZDOIsNew)
 					)
 					.GotoNext(MoveType.After,
-						i => i.MatchLdloc(out var _i),
-						i => i.MatchLdloc(out var _i),
+						i => i.MatchLdloc(out _),
+						i => i.MatchLdloc(out _),
 						i => i.MatchCallvirt<ZDO>("Deserialize")
 					)
 					.Emit(OC.Ldloc, idx_stZDO)
