@@ -4,13 +4,9 @@ using System.Linq;
 using BepInEx;
 using HarmonyLib;
 using System.Reflection;
-using System.Reflection.Emit;
-using BepInEx.Configuration;
 using UnityEngine;
 
 using MonoMod.Cil;
-using Mono.Cecil.Cil;
-using MonoMod.Utils;
 
 using OpCodes = System.Reflection.Emit.OpCodes;
 using OpCode = System.Reflection.Emit.OpCode;
@@ -24,15 +20,6 @@ namespace Valheim_Serverside
 		private static ServersidePlugin context;
 
 		private Configuration configuration;
-
-		static Dictionary<OpCode, OpCode> StlocToLdloc = new Dictionary<OpCode, OpCode> {
-			{OpCodes.Stloc_0, OpCodes.Ldloc_0},
-			{OpCodes.Stloc_1, OpCodes.Ldloc_1},
-			{OpCodes.Stloc_2, OpCodes.Ldloc_2},
-			{OpCodes.Stloc_3, OpCodes.Ldloc_3},
-			{OpCodes.Stloc_S, OpCodes.Ldloc_S},
-			{OpCodes.Stloc, OpCodes.Ldloc}
-		};
 
 		private void Awake()
 		{
@@ -241,6 +228,15 @@ namespace Valheim_Serverside
 			Fixes monsters not spawning during events with this mod active.
 		*/
 		{
+			static Dictionary<OpCode, OpCode> StlocToLdloc = new Dictionary<OpCode, OpCode> {
+				{OpCodes.Stloc_0, OpCodes.Ldloc_0},
+				{OpCodes.Stloc_1, OpCodes.Ldloc_1},
+				{OpCodes.Stloc_2, OpCodes.Ldloc_2},
+				{OpCodes.Stloc_3, OpCodes.Ldloc_3},
+				{OpCodes.Stloc_S, OpCodes.Ldloc_S},
+				{OpCodes.Stloc, OpCodes.Ldloc}
+			};
+
 			static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> _instructions)
 			{
 				//var codes = new List<CodeInstruction>(instructions);
