@@ -47,7 +47,6 @@ namespace Valheim_Serverside
 
 			Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), null);
 			IL.ZDOMan.RPC_ZDOData += ZDOMan_RPC_ZDODataPatch.Transpiler;
-			IL.RandEventSystem.FixedUpdate += _RandEventSystem_FixedUpdate_Patch.Transpiler;
 			Logger.LogInfo("Serverside Simulations installed");
 		}
 
