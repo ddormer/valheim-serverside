@@ -33,7 +33,6 @@ namespace Valheim_Serverside
 			}
 
 			Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), null);
-			IL.ZDOMan.RPC_ZDOData += ZDOMan_RPC_ZDODataPatch.Transpiler;
 			Logger.LogInfo("Serverside Simulations installed");
 		}
 
@@ -411,7 +410,8 @@ namespace Valheim_Serverside
 			}
 		}
 
-		private class ZDOMan_RPC_ZDODataPatch
+		[HarmonyPatch(typeof(ZDOMan), "RPC_ZDOData")]
+		public class ZDOMan_RPC_ZDODataPatch
 		{
 			static void CheckShouldOwn(ZDO zdo, bool isNew)
 			{
@@ -434,7 +434,7 @@ namespace Valheim_Serverside
 				}
 			}
 
-			public static void Transpiler(ILContext il)
+			public static void ILManipulator(ILContext il)
 			{
 				int idx_stZDO = 0;
 				int idx_stZDOIsNew = 0;

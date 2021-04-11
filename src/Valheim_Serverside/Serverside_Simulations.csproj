@@ -54,10 +54,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(SolutionDir)\..\ValheimLibs\BepInEx.Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="MMHOOK_assembly_valheim, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\ValheimLibs\MMHOOK_assembly_valheim.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Cecil, Version=0.10.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\ValheimLibs\Mono.Cecil.dll</HintPath>
