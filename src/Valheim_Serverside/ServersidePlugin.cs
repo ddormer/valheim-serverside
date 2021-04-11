@@ -450,7 +450,6 @@ namespace Valheim_Serverside
 						i => i.MatchLdcI4(out var _i),
 						i => i.MatchStloc(out idx_stZDOIsNew)
 					)
-					// seek to start of ZDO.Deserialize call
 					.GotoNext(MoveType.After,
 						i => i.MatchLdloc(out var _i),
 						i => i.MatchLdloc(out var _i),
