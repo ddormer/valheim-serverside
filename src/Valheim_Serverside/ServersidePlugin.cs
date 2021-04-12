@@ -127,6 +127,16 @@ namespace Valheim_Serverside
 			}
 		}
 
+		[HarmonyPatch(typeof(ZNetScene), "InLoadingScreen")]
+		private static class ZNetScene_InLoadingScreen_Patch
+        {
+			private static bool Prefix(ref bool __result)
+            {
+				__result = false;
+				return false;
+			}
+        }
+
 		[HarmonyPatch(typeof(ZoneSystem), "Update")]
 		static class ZoneSystem_Update_Patch
 		/*
@@ -190,21 +200,29 @@ namespace Valheim_Serverside
 				{
 					if (zdo.m_persistent)
 					{
-						List<bool> in_area = new List<bool>();
+						bool anyPlayerInArea = false;
 						foreach (ZNetPeer peer in ZNet.instance.GetPeers())
 						{
-							in_area.Add(ZNetScene.instance.InActiveArea(zdo.GetSector(), ZoneSystem.instance.GetZone(peer.GetRefPos())));
+							if (ZNetScene.instance.InActiveArea(zdo.GetSector(), ZoneSystem.instance.GetZone(peer.GetRefPos())))
+                            {
+								anyPlayerInArea = true;
+								break;
+                            }
 						}
+
 						if (zdo.m_owner == uid || zdo.m_owner == ZNet.instance.GetUID())
 						{
-							if (!in_area.Contains(true))
+							if (!anyPlayerInArea)
 							{
 								zdo.SetOwner(0L);
 							}
 						}
-
-						else if ((zdo.m_owner == 0L || !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.m_owner }).GetValue<bool>())
-								 && in_area.Contains(true))
+						else if (
+							(zdo.m_owner == 0L 
+							|| !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.m_owner }).GetValue<bool>()
+							)
+							&& anyPlayerInArea
+						)
 						{
 							zdo.SetOwner(ZNet.instance.GetUID());
 						}
