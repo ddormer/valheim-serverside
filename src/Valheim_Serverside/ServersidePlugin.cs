@@ -5,21 +5,27 @@ using BepInEx;
 using HarmonyLib;
 using System.Reflection;
 using System.Reflection.Emit;
-using BepInEx.Configuration;
 using UnityEngine;
 using OpCodes = System.Reflection.Emit.OpCodes;
+using BepInEx.Logging;
+using FeaturesLib;
 
 namespace Valheim_Serverside
 {
+	[Harmony]
 	[BepInPlugin("MVP.Valheim_Serverside_Simulations", "Serverside Simulations", "1.0.1")]
 	public class ServersidePlugin : BaseUnityPlugin
 	{
+		public static ManualLogSource logger;
+		public static AvailableFeatures availableFeatures;
+
 		private static ServersidePlugin context;
 
 		private Configuration configuration;
 
 		private void Awake()
 		{
+			logger = Logger;
 			context = this;
 			configuration = new Configuration(Config);
 
@@ -29,7 +35,13 @@ namespace Valheim_Serverside
 				return;
 			}
 
-			Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), null);
+			availableFeatures = new AvailableFeatures();
+			availableFeatures.AddFeature("debug.rpc_chat", () => true);
+
+			Assembly assembly = typeof(ServersidePlugin).Assembly;
+			Harmony harmony = new Harmony("MVP.Valheim_Serverside_Simulations");
+			new HarmonyFeaturesPatcher(availableFeatures).PatchAll(assembly, harmony);
+
 			Logger.LogInfo("Serverside Simulations installed");
 		}
 
@@ -57,30 +69,6 @@ namespace Valheim_Serverside
 		{
 			System.Diagnostics.Trace.WriteLine(string.Concat(obj));
 		}
-
-		#if DEBUG
-		[HarmonyPatch(typeof(Chat), "RPC_ChatMessage")]
-		static class Chat_RPC_ChatMessage_Patch
-		{
-			static void Prefix(ref long sender, ref string text)
-			{
-				ZNetPeer peer = ZNet.instance.GetPeer(sender);
-				if (peer == null)
-				{
-					return;
-				}
-				if (text == "startevent")
-				{
-					RandEventSystem.instance.SetRandomEventByName("army_theelder", peer.GetRefPos());
-				}
-				else if (text == "stopevent")
-				{
-					RandEventSystem.instance.ResetRandomEvent();
-				}
-			}
-		}
-		#endif
-
 
 		[HarmonyPatch(typeof(ZNetScene), "CreateDestroyObjects")]
 		private class CreateDestroyObjects_Patch

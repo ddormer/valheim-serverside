@@ -72,6 +72,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Class1.cs" />
+    <Compile Include="FeaturesLib.cs" />
+    <Compile Include="Debugging.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="SequentialInstructions.cs" />
     <Compile Include="ServersidePlugin.cs" />
