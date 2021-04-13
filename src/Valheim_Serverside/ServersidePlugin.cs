@@ -81,7 +81,6 @@ namespace Valheim_Serverside
 		}
 		#endif
 
-
 		[HarmonyPatch(typeof(ZNetScene), "CreateDestroyObjects")]
 		private class CreateDestroyObjects_Patch
 		/*
@@ -89,8 +88,8 @@ namespace Valheim_Serverside
 
 			Creates and destroys ZDOs by finding all objects in each peer area.
 
-			Some object overlap can happen if peers are close to each other, the objects are
-			deduplicated by using a HashSet, see `List.Distinct`.
+			Some object overlap can happen if peers are close to each other: we find all active areas (sectors)
+			and deduplicate using HashSets.
 
 			This method originally works only with objects surrounding `ZNet.GetReferencePosition()` which returns some
 			made-up nonsense on a dedicated server.
@@ -106,20 +105,23 @@ namespace Valheim_Serverside
 						   frame number.
 		*/
 		{
-			private static bool Prefix(ZNetScene __instance)
-			{
-				List<ZDO> m_tempCurrentObjects = new List<ZDO>();
-				List<ZDO> m_tempCurrentDistantObjects = new List<ZDO>();
-				foreach (ZNetPeer znetPeer in ZNet.instance.GetConnectedPeers())
-				{
-					Vector2i zone = ZoneSystem.instance.GetZone(znetPeer.GetRefPos());
-					ZDOMan.instance.FindSectorObjects(zone, ZoneSystem.instance.m_activeArea, ZoneSystem.instance.m_activeDistantArea, m_tempCurrentObjects, m_tempCurrentDistantObjects);
-				}
+			private static HashSet<Vector2i> m_tempNearSectors = new HashSet<Vector2i>();
+			private static HashSet<Vector2i> m_tempDistantSectors = new HashSet<Vector2i>();
 
-				m_tempCurrentDistantObjects = m_tempCurrentDistantObjects.Distinct().ToList();
-				m_tempCurrentObjects = m_tempCurrentObjects.Distinct().ToList();
-				Traverse.Create(__instance).Method("CreateObjects", m_tempCurrentObjects, m_tempCurrentDistantObjects).GetValue();
-				Traverse.Create(__instance).Method("RemoveObjects", m_tempCurrentObjects, m_tempCurrentDistantObjects).GetValue();
+			private static bool Prefix(ZNetScene __instance, ref List<ZDO> ___m_tempCurrentObjects, ref List<ZDO> ___m_tempCurrentDistantObjects)
+			{
+				m_tempNearSectors.Clear();
+				m_tempDistantSectors.Clear();
+				___m_tempCurrentObjects.Clear();
+				___m_tempCurrentDistantObjects.Clear();
+
+				ServersideUtils.FindAllActiveSectors(ZoneSystem.instance.m_activeArea, ZoneSystem.instance.m_activeDistantArea, m_tempNearSectors, m_tempDistantSectors);
+				ServersideUtils.FindObjectsInSectors(m_tempNearSectors, ___m_tempCurrentObjects);
+				ServersideUtils.FindDistantObjectsInSectors(m_tempDistantSectors, ___m_tempCurrentDistantObjects);
+
+				Traverse.Create(__instance).Method("CreateObjects", ___m_tempCurrentObjects, ___m_tempCurrentDistantObjects).GetValue();
+				Traverse.Create(__instance).Method("RemoveObjects", ___m_tempCurrentObjects, ___m_tempCurrentDistantObjects).GetValue();
+
 				return false;
 			}
 		}
