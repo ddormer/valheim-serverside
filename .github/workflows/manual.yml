@@ -35,7 +35,8 @@ jobs:
         echo "Hello ${{ github.event.inputs.name }}"
     - name: build
       run: |
-        xcopy /E lib ..\ValheimLibs
+        xcopy /E /I lib ..\ValheimLibs
+        robocopy serverfiles\valheim_server_Data\Managed\* ..\ValheimLibs\
         msbuild -p:Configuration=Release
         
       
