@@ -1,1 +1,1 @@
-Managed\/.+\.dll
+Managed\\.+\.dll
