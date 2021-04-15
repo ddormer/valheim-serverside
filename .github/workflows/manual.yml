@@ -27,6 +27,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: microsoft/setup-msbuild@v1.0.2
+    - uses: actions/download-artifact@v2
     - name: Download Valheim
       run: |
         dotnet contrib/depotdownloader-2.3.6/DepotDownloader.dll -app 896660 -os windows -filelist .depot-downloader-file-list.txt -dir serverfiles
@@ -38,5 +39,10 @@ jobs:
         xcopy /E /I lib ..\ValheimLibs
         xcopy /I serverfiles\valheim_server_Data\Managed\* ..\ValheimLibs\
         msbuild /t:Restore,Build -p:Configuration=Release
-        
+    - name: upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: serverside-simulations-x
+        path: bin\Release\Serverside_Simulations.dll
+
       
