@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-npm install markdown-to-bbcode
-node --experimental-modules bin/build-bbcode.mjs
-
 git config --local user.email "$(git log --format='%ae' HEAD^!)"
 git config --local user.name "$(git log --format='%an' HEAD^!)"
 
 git remote add github "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git"
 git pull github ${GITHUB_REF} --ff-only
+
+npm install markdown-to-bbcode
+node --experimental-modules bin/build-bbcode.mjs
 
 if ! `git diff-files --quiet README.bbcode` ; then
   echo "No README.bbcode changes found, exiting."
