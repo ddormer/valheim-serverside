@@ -1,18 +1,17 @@
-# This is a basic workflow that is manually triggered
-
-name: Build Plugin DLL
+name: Build Plugin
 
 # Controls when the action will run. Workflow runs when manually triggered using the UI
 # or API.
 on:
+  push:
+    branches: [ main ]
+    
   workflow_dispatch:
-    # Inputs the workflow accepts.
     inputs:
-      name:
-        # Friendly description to be shown in the UI instead of 'name'
-        description: 'Person to greet'
+      build_configuration:
+        description: 'Build configuration'
         # Default value if no value is explicitly provided
-        default: 'World'
+        default: 'Release'
         # Input has to be provided for the workflow to run
         required: true
 
@@ -28,17 +27,17 @@ jobs:
     - uses: actions/checkout@v2
     - uses: microsoft/setup-msbuild@v1.0.2
     - uses: actions/download-artifact@v2
+    
     - name: Download Valheim
       run: |
         dotnet contrib/depotdownloader-2.3.6/DepotDownloader.dll -app 896660 -os windows -filelist .depot-downloader-file-list.txt -dir serverfiles
-    - name: Send greeting
-      run: |
-        echo "Hello ${{ github.event.inputs.name }}"
+        
     - name: build
       run: |
         xcopy /E /I lib ..\ValheimLibs
         xcopy /I serverfiles\valheim_server_Data\Managed\* ..\ValheimLibs\
-        msbuild /t:Restore,Build -p:Configuration=Release
+        msbuild /t:Restore,Build -p:Configuration=${{ github.event.inputs.build_configuration }}
+        
     - name: upload
       uses: actions/upload-artifact@v2
       with:
