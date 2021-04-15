@@ -37,6 +37,6 @@ jobs:
       run: |
         xcopy /E /I lib ..\ValheimLibs
         xcopy /I serverfiles\valheim_server_Data\Managed\* ..\ValheimLibs\
-        msbuild -p:Configuration=Release
+        msbuild /t:Restore,Build -p:Configuration=Release
         
       
