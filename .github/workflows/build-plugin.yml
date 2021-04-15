@@ -1,7 +1,5 @@
 name: Build Plugin
 
-# Controls when the action will run. Workflow runs when manually triggered using the UI
-# or API.
 on:
   push:
     branches: [ main ]
@@ -10,17 +8,12 @@ on:
     inputs:
       build_configuration:
         description: 'Build configuration'
-        # Default value if no value is explicitly provided
         default: 'Release'
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "greet"
-  greet:
-    # The type of runner that the job will run on
+  build:
     runs-on: windows-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     - uses: actions/checkout@v2
     - uses: microsoft/setup-msbuild@v1.0.2
@@ -34,7 +27,7 @@ jobs:
       run: |
         xcopy /E /I lib ..\ValheimLibs
         xcopy /I serverfiles\valheim_server_Data\Managed\* ..\ValheimLibs\
-        if [ -n "${{ github.event.inputs.build_configuration }}" ] ;
+        if [ -n "${{ github.event.inputs.build_configuration }}" ]
         then
             msbuild /t:Restore,Build -p:Configuration=${{ github.event.inputs.build_configuration }}
         else
