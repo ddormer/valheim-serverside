@@ -91,7 +91,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>set SCRIPT=$(SolutionDir)\bin\post_build.bat
+    <PostBuildEvent Condition="'$(BuildingInsideVisualStudio)' == true">set SCRIPT=$(SolutionDir)\bin\post_build.bat
 IF EXIST %25SCRIPT%25 CALL %25SCRIPT%25 $(TargetPath)</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
