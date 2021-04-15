@@ -9,9 +9,9 @@ git pull github ${GITHUB_REF} --ff-only
 npm install markdown-to-bbcode
 node --experimental-modules bin/build-bbcode.mjs
 
-git diff-files README.bbcode
+git README.bbcode
 
-if ! `git diff-files --quiet README.bbcode` ; then
+if `git diff-files --quiet README.bbcode` ; then
   echo "No README.bbcode changes found, exiting."
   exit 0
 fi
