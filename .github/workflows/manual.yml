@@ -36,7 +36,7 @@ jobs:
     - name: build
       run: |
         xcopy /E /I lib ..\ValheimLibs
-        robocopy serverfiles\valheim_server_Data\Managed\* ..\ValheimLibs\
+        xcopy /I serverfiles\valheim_server_Data\Managed\* ..\ValheimLibs\
         msbuild -p:Configuration=Release
         
       
