@@ -4,11 +4,11 @@ on:
   push:
     branches: [ main ]
     
-  workflow_dispatch:
-    inputs:
-      build_configuration:
-        description: 'Build configuration'
-        default: 'Release'
+#  workflow_dispatch:
+#    inputs:
+#      build_configuration:
+#        description: 'Build configuration'
+#        default: 'Release'
 
 jobs:
   build:
@@ -27,12 +27,7 @@ jobs:
       run: |
         xcopy /E /I lib ..\ValheimLibs
         xcopy /I serverfiles\valheim_server_Data\Managed\* ..\ValheimLibs\
-        if [ -n "${{ github.event.inputs.build_configuration }}" ]
-        then
-            msbuild /t:Restore,Build -p:Configuration=${{ github.event.inputs.build_configuration }}
-        else
-            msbuild /t:Restore,Build -p:Configuration=Release
-        fi
+        msbuild /t:Restore,Build -p:Configuration=Release
         
     - name: upload
       uses: actions/upload-artifact@v2
