@@ -1,5 +1,9 @@
 # Valheim Serverside Simulations
 
+[![Build Plugin DLL](https://github.com/ddormer/valheim-serverside/actions/workflows/manual.yml/badge.svg?branch=main)](https://github.com/ddormer/valheim-serverside/actions/workflows/manual.yml)
+
+![foo](https://github.com/ddormer/valheim-serverside/blob/main/ss-gh.png)
+
 Run world and monster simulations on a **dedicated server**.
 
 Updated for patch: 0.148.7
