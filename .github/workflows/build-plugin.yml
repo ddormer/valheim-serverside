@@ -34,7 +34,12 @@ jobs:
       run: |
         xcopy /E /I lib ..\ValheimLibs
         xcopy /I serverfiles\valheim_server_Data\Managed\* ..\ValheimLibs\
-        msbuild /t:Restore,Build -p:Configuration=${{ github.event.inputs.build_configuration }}
+        if [ -n "${{ github.event.inputs.build_configuration }}" ]
+	then
+		msbuild /t:Restore,Build -p:Configuration=${{ github.event.inputs.build_configuration }}
+	else
+		msbuild /t:Restore,Build -p:Configuration=Release
+	fi
         
     - name: upload
       uses: actions/upload-artifact@v2
