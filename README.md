@@ -1,4 +1,4 @@
-foo# Valheim Serverside Simulations
+# Valheim Serverside Simulations
 
 Run world and monster simulations on a **dedicated server**.
 
