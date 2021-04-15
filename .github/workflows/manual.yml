@@ -26,11 +26,15 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     - uses: actions/checkout@v2
+    - uses: microsoft/setup-msbuild@v1.0.2
     - name: Download Valheim
       run: |
         bin/download_server.sh
     - name: Send greeting
       run: |
         echo "Hello ${{ github.event.inputs.name }}"
+    - name: build
+      run: |
+        msbuild -p:Configuration=Release
         
       
