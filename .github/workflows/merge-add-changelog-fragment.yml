@@ -39,7 +39,7 @@ jobs:
           pip3 install git+https://github.com/jonathanj/cacofonix.git
           _TYPE="change"
           echo "${{ github.event.issue.labels}} "
-          echo "${github.event.issue.labels.*.name}"
-          if contains(${github.event.issue.labels.*.name}, 'enhancement') ; then _TYPE="feature"; fi
-          if contains(${github.event.issue.labels.*.name}, 'bug') ; then _TYPE="bugfix"; fi
+          echo "${{github.event.issue.labels.*.name}}"
+          if contains(${{github.event.issue.labels.*.name}}, 'enhancement') ; then _TYPE="feature"; fi
+          if contains(${{github.event.issue.labels.*.name}}, 'bug') ; then _TYPE="bugfix"; fi
           cacofonix --config cacofonix.yaml compose -t "${_TYPE}" -d "${github.event.pull_request.title}"
