@@ -36,7 +36,6 @@ jobs:
         run: |
           echo Add other actions to build,
           echo test, and deploy your project.
-          echo "${github.event.pull_request}"
           pip3 install git+https://github.com/jonathanj/cacofonix.git
           _TYPE="change"
           if contains(github.event.issue.labels.*.name, 'enhancement') ; then _TYPE="feature"; fi
