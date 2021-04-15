@@ -1,0 +1,6 @@
+type: feature
+section: null
+issues: {}
+feature_flags: []
+description: |-
+  Take ownership of client placed objects as they are created.
