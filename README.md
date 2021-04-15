@@ -1,6 +1,6 @@
 # Valheim Serverside Simulations
 
-[![Build Plugin DLL](https://github.com/ddormer/valheim-serverside/actions/workflows/manual.yml/badge.svg?branch=main)](https://github.com/ddormer/valheim-serverside/actions/workflows/manual.yml)
+[![Build Plugin](https://github.com/ddormer/valheim-serverside/actions/workflows/build-plugin.yml/badge.svg)](https://github.com/ddormer/valheim-serverside/actions/workflows/build-plugin.yml)
 
 ![foo](https://github.com/ddormer/valheim-serverside/blob/main/ss-gh.png)
 
