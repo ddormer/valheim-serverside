@@ -1,0 +1,6 @@
+type: bugfix
+section: null
+issues: {}
+feature_flags: []
+description: |-
+  Prevent event monsters from spawning outside of the random event area, during a random event.
