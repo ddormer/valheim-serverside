@@ -42,9 +42,9 @@ namespace Valheim_Serverside
 		}
 
 		public int GetMaxCreatedPerFrame()
-        {
+		{
 			return configuration.maxObjectsPerFrame.Value;
-        }
+		}
 
 		public static bool IsServer()
 		{
@@ -86,9 +86,9 @@ namespace Valheim_Serverside
 					RandEventSystem.instance.ResetRandomEvent();
 				}
 				else if (text.StartsWith("maxobjects"))
-                {
+				{
 					context.configuration.maxObjectsPerFrame.Value = Convert.ToInt32(text.Split(' ').GetValue(1));
-                }
+				}
 			}
 		}
 #endif
@@ -162,13 +162,13 @@ namespace Valheim_Serverside
 
 		[HarmonyPatch(typeof(ZNetScene), "InLoadingScreen")]
 		private static class ZNetScene_InLoadingScreen_Patch
-        {
+		{
 			private static bool Prefix(ref bool __result)
-            {
+			{
 				__result = false;
 				return false;
 			}
-        }
+		}
 
 		[HarmonyPatch(typeof(ZoneSystem), "Update")]
 		static class ZoneSystem_Update_Patch
@@ -237,10 +237,10 @@ namespace Valheim_Serverside
 						foreach (ZNetPeer peer in ZNet.instance.GetPeers())
 						{
 							if (ZNetScene.instance.InActiveArea(zdo.GetSector(), ZoneSystem.instance.GetZone(peer.GetRefPos())))
-                            {
+							{
 								anyPlayerInArea = true;
 								break;
-                            }
+							}
 						}
 
 						if (zdo.m_owner == uid || zdo.m_owner == ZNet.instance.GetUID())
