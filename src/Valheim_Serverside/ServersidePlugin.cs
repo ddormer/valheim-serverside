@@ -113,7 +113,9 @@ namespace Valheim_Serverside
 						i => i.MatchLdloca(2),
 						i => i.MatchCall<ZNetScene>("CreateObjectsSorted")
 					)
-					.Emit(OC.Call, AccessTools.Method(typeof(ServersidePlugin), nameof(ServersidePlugin.GetMaxCreatedPerFrame)))
+					.Emit(OC.Call, AccessTools.Method(
+						typeof(ServersidePlugin),
+						nameof(ServersidePlugin.GetMaxCreatedPerFrame)))
 					.Emit(OC.Stloc_0);
 			}
 		}
