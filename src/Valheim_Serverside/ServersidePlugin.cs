@@ -194,10 +194,10 @@ namespace Valheim_Serverside
 						foreach (ZNetPeer peer in ZNet.instance.GetPeers())
 						{
 							if (ZNetScene.instance.InActiveArea(zdo.GetSector(), ZoneSystem.instance.GetZone(peer.GetRefPos())))
-                            {
+							{
 								anyPlayerInArea = true;
 								break;
-                            }
+							}
 						}
 
 						if (zdo.m_owner == uid || zdo.m_owner == ZNet.instance.GetUID())
