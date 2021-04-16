@@ -169,6 +169,35 @@ namespace Valheim_Serverside
 			}
 		}
 
+		[HarmonyPatch(typeof(ZNetScene), "Awake")]
+		static class ZNetScene_Awake_Patch
+		{
+			private static Type[] selfManagedComponents = new Type[]
+			{
+				typeof(Container),
+				typeof(ItemDrop),
+				typeof(ItemStand),
+				typeof(Ship),
+				typeof(Vagon)
+			};
+
+			public static HashSet<int> selfManagedPrefabs = new HashSet<int>();
+
+			public static void Postfix(ZNetScene __instance)
+			{
+				foreach (GameObject prefab in __instance.m_prefabs)
+				{
+					foreach (Type componentType in selfManagedComponents)
+					{
+						if (prefab.GetComponentInChildren(componentType))
+						{
+							selfManagedPrefabs.Add(prefab.name.GetStableHashCode());
+						}
+					}
+				}
+			}
+		}
+
 		[HarmonyPatch(typeof(ZDOMan), "ReleaseNearbyZDOS")]
 		static class ZDOMan_ReleaseNearbyZDOS_Patch
 		/*
@@ -179,8 +208,14 @@ namespace Valheim_Serverside
 			If ZDO is no longer near the peer, release ownership. If no owner set, change ownership to said peer.
 		*/
 		{
+			private static bool ShouldManageOwner(ZDO zdo)
+			{
+				return !ZNetScene_Awake_Patch.selfManagedPrefabs.Contains(zdo.GetPrefab());
+			}
+
 			static bool Prefix(ZDOMan __instance, ref Vector3 refPosition, ref long uid)
 			{
+				long serverUid = ZNet.instance.GetUID();
 				Vector2i zone = ZoneSystem.instance.GetZone(refPosition);
 				List<ZDO> m_tempNearObjects = Traverse.Create(__instance).Field("m_tempNearObjects").GetValue<List<ZDO>>();
 				m_tempNearObjects.Clear();
@@ -190,31 +225,52 @@ namespace Valheim_Serverside
 				{
 					if (zdo.m_persistent)
 					{
-						bool anyPlayerInArea = false;
+						Vector2i zdoSector = zdo.GetSector();
+						bool thisPlayerInArea = ZNetScene.instance.InActiveArea(zdoSector, refPosition);
+						bool otherPlayerInArea = false;
 						foreach (ZNetPeer peer in ZNet.instance.GetPeers())
 						{
-							if (ZNetScene.instance.InActiveArea(zdo.GetSector(), ZoneSystem.instance.GetZone(peer.GetRefPos())))
-                            {
-								anyPlayerInArea = true;
+							if (peer.m_uid == uid) continue;
+
+							if (ZNetScene.instance.InActiveArea(zdoSector, ZoneSystem.instance.GetZone(peer.GetRefPos())))
+							{
+								otherPlayerInArea = true;
 								break;
-                            }
+							}
 						}
 
-						if (zdo.m_owner == uid || zdo.m_owner == ZNet.instance.GetUID())
+						if (zdo.m_owner == 0L)
 						{
-							if (!anyPlayerInArea)
+							if (thisPlayerInArea && otherPlayerInArea)
+							{
+								zdo.SetOwner(serverUid);
+							}
+							else if (thisPlayerInArea && !otherPlayerInArea)
+							{
+								zdo.SetOwner(uid);
+							}
+						}
+						else
+						{
+							if (thisPlayerInArea && !otherPlayerInArea)
+							{
+								if (zdo.m_owner != uid && ShouldManageOwner(zdo))
+								{
+									ZLog.Log($"Setting owner to {uid}");
+									zdo.SetOwner(uid);
+								}
+							}
+							else if (thisPlayerInArea && otherPlayerInArea)
+							{
+								if (zdo.m_owner != serverUid && ShouldManageOwner(zdo))
+								{
+									zdo.SetOwner(serverUid);
+								}
+							}
+							else if (!thisPlayerInArea && !otherPlayerInArea)
 							{
 								zdo.SetOwner(0L);
 							}
-						}
-						else if (
-							(zdo.m_owner == 0L 
-							|| !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.m_owner }).GetValue<bool>()
-							)
-							&& anyPlayerInArea
-						)
-						{
-							zdo.SetOwner(ZNet.instance.GetUID());
 						}
 					}
 				}
