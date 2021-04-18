@@ -127,6 +127,16 @@ namespace Valheim_Serverside
 			}
 		}
 
+		[HarmonyPatch(typeof(ZNetScene), "InLoadingScreen")]
+		private static class ZNetScene_InLoadingScreen_Patch
+		{
+			private static bool Prefix(ref bool __result)
+			{
+				__result = false;
+				return false;
+			}
+		}
+
 		[HarmonyPatch(typeof(ZoneSystem), "Update")]
 		static class ZoneSystem_Update_Patch
 		/*
