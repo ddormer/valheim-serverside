@@ -495,8 +495,8 @@ namespace Valheim_Serverside
 					{
 						zdo.SetOwner(driver.userID);
 					}
-					return false;
                 }
+				return false;
 			}
 		}
 	}
