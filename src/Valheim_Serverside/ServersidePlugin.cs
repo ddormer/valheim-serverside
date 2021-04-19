@@ -483,9 +483,9 @@ namespace Valheim_Serverside
 		{
 			static bool Prefix(ref Ship __instance) {
 				ZDO zdo = Traverse.Create(__instance).Field("m_nview").GetValue<ZNetView>().GetZDO();
-				if (zdo.GetInt("inUse", 0) == 0)
+				if (zdo.GetInt("InUse", 0) == 0)
                 {
-					if (!__instance.m_shipControlls.HaveValidUser())
+					if (!__instance.m_shipControlls.HaveValidUser() && zdo.m_owner != ZNet.instance.GetUID())
 					{
 						new Traverse(__instance).Field("m_nview").GetValue<ZNetView>().GetZDO().SetOwner(ZNet.instance.GetUID());
 						return false;
