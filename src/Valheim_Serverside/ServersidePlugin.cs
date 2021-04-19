@@ -466,7 +466,7 @@ namespace Valheim_Serverside
 						return false;
 					}
 					ZDOID driver = new Traverse(__instance.m_shipControlls).Method("GetUser").GetValue<ZDOID>();
-					if (!driver.IsNone())
+					if (!driver.IsNone() && driver.userID != zdo.m_owner)
 					{
 						zdo.SetOwner(driver.userID);
 					}
