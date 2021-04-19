@@ -445,16 +445,33 @@ namespace Valheim_Serverside
 		[HarmonyPatch(typeof(Ship), "UpdateOwner")]
 		static class Ship_UpdateOwner_Patch
 		/*
-			If the ship has no valid user, set the owner to the server
-			to ensure simulations are updated correctly.
+			This method is inovked on a 4 second timer. 
+
+			Keep the Ship owner set to the Ship's driver.
+
+			If the Ship has no valid user, set the owner to the server
+			to ensure simulations are handled by the server.
+
+			Only change ownership when the Ship's container is not in use,
+			to prevent them from being kicked out of said container.
 		*/
-		{ 
+		{
 			static bool Prefix(ref Ship __instance) {
-				if (!__instance.m_shipControlls.HaveValidUser())
-				{
-					new Traverse(__instance).Field("m_nview").GetValue<ZNetView>().GetZDO().SetOwner(ZNet.instance.GetUID());
-				}
-				return true;
+				ZDO zdo = Traverse.Create(__instance).Field("m_nview").GetValue<ZNetView>().GetZDO();
+				if (zdo.GetInt("inUse", 0) == 0)
+                {
+					if (!__instance.m_shipControlls.HaveValidUser())
+					{
+						new Traverse(__instance).Field("m_nview").GetValue<ZNetView>().GetZDO().SetOwner(ZNet.instance.GetUID());
+						return false;
+					}
+					ZDOID driver = new Traverse(__instance.m_shipControlls).Method("GetUser").GetValue<ZDOID>();
+					if (!driver.IsNone())
+					{
+						zdo.SetOwner(driver.userID);
+					}
+					return false;
+                }
 			}
 		}
 	}
