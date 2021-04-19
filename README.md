@@ -6,7 +6,7 @@
 
 Run world and monster simulations on a **dedicated server**.
 
-Updated for patch: 0.148.7
+Updated for patch: 0.150.3
 
 ### Caveats
 
