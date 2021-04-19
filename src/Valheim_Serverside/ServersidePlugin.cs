@@ -485,13 +485,13 @@ namespace Valheim_Serverside
 				ZDO zdo = Traverse.Create(__instance).Field("m_nview").GetValue<ZNetView>().GetZDO();
 				if (zdo.GetInt("InUse", 0) == 0)
                 {
-					if (!__instance.m_shipControlls.HaveValidUser() && zdo.m_owner != ZNet.instance.GetUID())
+					if (!__instance.m_shipControlls.HaveValidUser())
 					{
 						new Traverse(__instance).Field("m_nview").GetValue<ZNetView>().GetZDO().SetOwner(ZNet.instance.GetUID());
 						return false;
 					}
 					ZDOID driver = new Traverse(__instance.m_shipControlls).Method("GetUser").GetValue<ZDOID>();
-					if (!driver.IsNone() && driver.userID != zdo.m_owner)
+					if (!driver.IsNone())
 					{
 						zdo.SetOwner(driver.userID);
 					}
