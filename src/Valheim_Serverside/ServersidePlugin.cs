@@ -277,22 +277,20 @@ namespace Valheim_Serverside
 						}
 						else
 						{
-							if (thisPlayerInArea && !otherPlayerInArea)
+							if (thisPlayerInArea)
 							{
-								if (zdo.m_owner != uid && ShouldManageOwner(zdo))
+								if (ShouldManageOwner(zdo))
 								{
-									ZLog.Log($"Setting owner to {uid}");
-									zdo.SetOwner(uid);
+									long desiredOwner = otherPlayerInArea ? serverUid : uid;
+
+									if (zdo.m_owner != desiredOwner)
+									{
+										ZLog.Log($"Setting owner to {desiredOwner}");
+										zdo.SetOwner(desiredOwner);
+									}
 								}
 							}
-							else if (thisPlayerInArea && otherPlayerInArea)
-							{
-								if (zdo.m_owner != serverUid && ShouldManageOwner(zdo))
-								{
-									zdo.SetOwner(serverUid);
-								}
-							}
-							else if (!thisPlayerInArea && !otherPlayerInArea)
+							else if (!otherPlayerInArea)
 							{
 								zdo.SetOwner(0L);
 							}
