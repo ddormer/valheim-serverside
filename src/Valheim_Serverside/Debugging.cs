@@ -12,7 +12,7 @@ namespace Valheim_Serverside
 	[Harmony]
 	class Debugging
     {
-		[RequiredFeatureAttribute("debug.rpc_chat")]
+        [RequiredFeature("debug")]
 		[HarmonyPatch(typeof(Chat), "RPC_ChatMessage")]
 		public static class Chat_RPC_ChatMessage_Patch
 		{

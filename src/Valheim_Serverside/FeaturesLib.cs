@@ -6,36 +6,57 @@ using System.Linq;
 
 namespace FeaturesLib
 {
-
-    public class FeatureGuard
+    public class AvailableFeatures
     {
-        private readonly string name;
-        private readonly Func<bool> checker;
+        readonly Dictionary<string, Func<bool>> _features;
         
-        public FeatureGuard(string name, Func<bool> checker)
+        public AvailableFeatures()
         {
-            this.name = name;
-            this.checker = checker;
+            _features = new Dictionary<string, Func<bool>>();
         }
 
-        public virtual string Name
+        public AvailableFeatures(Dictionary<string, Func<bool>> features)
         {
-            get { return name; }
+            _features = features;
         }
 
-        public virtual Func<bool> Checker
+        public AvailableFeatures AddFeature(string name, Func<bool> checker)
         {
-            get { return checker; }
+            _features.Add(name, checker);
+            return this;
+        }
+
+        public bool IsFeatureEnabled(string feature_name)
+        {
+            this._features.TryGetValue(feature_name, out Func<bool> checker);
+            if (checker != null)
+            {
+                return checker();
+            }
+            return false;
+        }
+    }
+
+    //  Harmony support:
+
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+    public class RequiredFeatureAttribute : Attribute
+    {
+        public readonly string feature_name;
+
+        public RequiredFeatureAttribute(string feature_name)
+        {
+            this.feature_name = feature_name;
         }
     }
 
     public class HarmonyFeaturesPatcher
     {
-        private AvailableFeatures availableFeatures;
+        private readonly AvailableFeatures _availableFeatures;
 
         public HarmonyFeaturesPatcher(AvailableFeatures availableFeatures)
         {
-            this.availableFeatures = availableFeatures;
+            _availableFeatures = availableFeatures;
         }
 
         public void PatchAll(Assembly assembly, Harmony harmony_instance, bool feature_required = false)
@@ -49,79 +70,20 @@ namespace FeaturesLib
                     continue;
                 }
 
+                bool enabled = true;
+
                 foreach (RequiredFeatureAttribute attribute in attributes)
                 {
-                    if (!this.availableFeatures.IsFeatureEnabled(attribute.Name))
+                    if (!_availableFeatures.IsFeatureEnabled(attribute.feature_name))
                     {
-                        continue;
+                        enabled = false;
                     }
                 }
-                new PatchClassProcessor(harmony_instance, type).Patch();
+
+                if (enabled) {
+                    new PatchClassProcessor(harmony_instance, type).Patch();
+                }
             }
-        }
-    }
-
-    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-    public class RequiredFeatureAttribute : Attribute
-    {
-        private readonly FeatureGuard guard;
-        private readonly string name;
-
-        public RequiredFeatureAttribute(FeatureGuard guard)
-        {
-            this.guard = guard;
-            this.name = guard.Name;
-        }
-
-        public virtual string Name
-        {
-            get { return name; }
-        }
-
-        public bool IsFeatureEnabled()
-        {
-            return this.guard.Checker();
-        }
-    }
-
-    public class AvailableFeatures
-    {
-        private Dictionary<string, Func<bool>> features;
-
-        public AvailableFeatures()
-        {
-            this.features = new Dictionary<string, Func<bool>>();
-        }
-
-        public AvailableFeatures(Dictionary<string, Func<bool>> features)
-        {
-            this.features = features;
-        }
-
-        public AvailableFeatures AddFeature(string name, Func<bool> feature)
-        {
-            this.features.Add(name, feature);
-            return this;
-        }
-        public AvailableFeatures AddFeature(FeatureGuard guard)
-        {
-            this.features.Add(guard.Name, guard.Checker);
-            return this;
-        }
-
-        public bool IsFeatureEnabled(string name)
-        {
-            this.features.TryGetValue(name, out Func<bool> feature);
-            if (feature != null)
-            {
-                return feature();
-            }
-            return false;
-        }
-
-        public bool IsFeatureEnabled(FeatureGuard guard)
-        {
-            return IsFeatureEnabled(guard.Name);
         }
     }
 }

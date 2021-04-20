@@ -17,7 +17,6 @@ namespace Valheim_Serverside
 	public class ServersidePlugin : BaseUnityPlugin
 	{
 		public static ManualLogSource logger;
-		public static AvailableFeatures availableFeatures;
 
 		private static ServersidePlugin context;
 
@@ -35,13 +34,12 @@ namespace Valheim_Serverside
 				return;
 			}
 
-			availableFeatures = new AvailableFeatures();
-			availableFeatures.AddFeature("debug.rpc_chat", () => true);
+			AvailableFeatures availableFeatures = new AvailableFeatures();
+			availableFeatures.AddFeature("debug", FeatureCheckers.IsDebug);
 
 			Assembly assembly = typeof(ServersidePlugin).Assembly;
 			Harmony harmony = new Harmony("MVP.Valheim_Serverside_Simulations");
 			new HarmonyFeaturesPatcher(availableFeatures).PatchAll(assembly, harmony);
-
 			Logger.LogInfo("Serverside Simulations installed");
 		}
 
