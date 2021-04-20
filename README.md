@@ -6,7 +6,7 @@
 
 Run world and monster simulations on a **dedicated server**.
 
-Updated for patch: 0.148.7
+Updated for patch: 0.150.3
 
 ### Caveats
 
@@ -31,7 +31,7 @@ This dedicated server mod causes terrain, monsters and other objects that are no
 
 ### Known issues
 
-- When a player goes through a portal, other players nearby may momentarily see the player appear on their location. This does not effect the mechanics of teleportation and appears to only be a visual glitch.
+- When using a Ship's chest/container, you may get kicked out of the chest UI. A fix for this is being worked on.
 
 #### For mod developers - compatibility with Serverside Simulations
 

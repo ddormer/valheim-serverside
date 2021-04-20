@@ -127,6 +127,31 @@ namespace Valheim_Serverside
 			}
 		}
 
+		[HarmonyPatch(typeof(ZoneSystem), "IsActiveAreaLoaded")]
+		static class ZoneSystem_IsActiveAreaLoaded_Patch
+		{
+			private static bool Prefix(ZoneSystem __instance, ref bool __result, Dictionary<Vector2i, dynamic> ___m_zones)
+			{
+				foreach (ZNetPeer peer in ZNet.instance.GetPeers())
+				{
+					Vector2i zone = __instance.GetZone(peer.GetRefPos());
+					for (int i = zone.y - __instance.m_activeArea; i <= zone.y + __instance.m_activeArea; i++)
+					{
+						for (int j = zone.x - __instance.m_activeArea; j <= zone.x + __instance.m_activeArea; j++)
+						{
+							if (!___m_zones.ContainsKey(new Vector2i(j, i)))
+							{
+								__result = false;
+								return false;
+							}
+						}
+					}
+				}
+				__result = true;
+				return false;
+			}
+		}
+
 		[HarmonyPatch(typeof(ZoneSystem), "Update")]
 		static class ZoneSystem_Update_Patch
 		/*
