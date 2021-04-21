@@ -479,15 +479,19 @@ namespace Valheim_Serverside
 
 			Only change ownership when the Ship's container is not in use,
 			to prevent them from being kicked out of said container.
+
+			Prevent boat from taking impact damage from out of sync water 
+			levels when taking ownership.
 		*/
 		{
-			static bool Prefix(ref Ship __instance) {
-				ZDO zdo = Traverse.Create(__instance).Field("m_nview").GetValue<ZNetView>().GetZDO();
+			static bool Prefix(ref Ship __instance, ref ZNetView ___m_nview) {
+				ZDO zdo = ___m_nview.GetZDO();
 				if (zdo.GetInt("InUse", 0) == 0)
                 {
 					if (!__instance.m_shipControlls.HaveValidUser())
 					{
-						new Traverse(__instance).Field("m_nview").GetValue<ZNetView>().GetZDO().SetOwner(ZNet.instance.GetUID());
+						new Traverse(__instance).Field("m_lastWaterImpactTime").SetValue(Time.time);
+						zdo.SetOwner(ZNet.instance.GetUID());
 						return false;
 					}
 					ZDOID driver = new Traverse(__instance.m_shipControlls).Method("GetUser").GetValue<ZDOID>();
