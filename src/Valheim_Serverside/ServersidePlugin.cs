@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+
 using OpCode = System.Reflection.Emit.OpCode;
 using OpCodes = System.Reflection.Emit.OpCodes;
 
@@ -20,7 +21,7 @@ namespace Valheim_Serverside
 
 		private static ServersidePlugin context;
 
-		private Configuration configuration;
+		public static Configuration configuration;
 
 		private void Awake()
 		{
@@ -35,6 +36,7 @@ namespace Valheim_Serverside
 
 			AvailableFeatures availableFeatures = new AvailableFeatures();
 			availableFeatures.AddFeature("debug", FeatureCheckers.IsDebug);
+			availableFeatures.AddFeature("MaxObjectsPerFrame", FeatureCheckers.MaxObjectsPerFrame);
 
 			Assembly assembly = typeof(ServersidePlugin).Assembly;
 			Harmony harmony = new Harmony("MVP.Valheim_Serverside_Simulations");
@@ -42,14 +44,15 @@ namespace Valheim_Serverside
 			Logger.LogInfo("Serverside Simulations installed");
 		}
 
-		private bool ModIsEnabled()
+		public bool ModIsEnabled()
 		{
 			return configuration.modEnabled.Value;
 		}
 
-		public int GetMaxCreatedPerFrame()
+		public void Update()
 		{
-			return configuration.maxObjectsPerFrame.Value;
+			context.Logger.LogInfo("FOOOOO");
+			Logger.LogInfo(configuration.maxObjectsPerFrame.Value.ToString());
 		}
 
 		public static bool IsServer()
@@ -70,60 +73,6 @@ namespace Valheim_Serverside
 		public static void PrintLog(object[] obj)
 		{
 			System.Diagnostics.Trace.WriteLine(string.Concat(obj));
-		}
-
-#if DEBUG
-		[HarmonyPatch(typeof(Chat), "RPC_ChatMessage")]
-		static class Chat_RPC_ChatMessage_Patch
-		{
-			static void Prefix(ref long sender, ref string text)
-			{
-				ZNetPeer peer = ZNet.instance.GetPeer(sender);
-				if (peer == null)
-				{
-					return;
-				}
-				if (text == "startevent")
-				{
-					RandEventSystem.instance.SetRandomEventByName("army_theelder", peer.GetRefPos());
-				}
-				else if (text == "stopevent")
-				{
-					RandEventSystem.instance.ResetRandomEvent();
-				}
-				else if (text.StartsWith("maxobjects"))
-				{
-					context.configuration.maxObjectsPerFrame.Value = Convert.ToInt32(text.Split(' ').GetValue(1));
-				}
-			}
-		}
-#endif
-
-		[HarmonyPatch(typeof(ZNetScene), "CreateObjects")]
-		private class CreateObjects_Patch
-		/*
-			Set the local variable `maxCreatedPerFrame` to the result of `GetMaxCreatedPerFrame`.
-
-			Setting this higher allows the world to be loaded faster if the server CPU can keep up.
-
-			Originally set to 100, see `Configuration.maxObjectsPerFrame` for the new value.
-		 */
-		{
-			public static void ILManipulator(ILContext il)
-			{
-				new ILCursor(il)
-					.GotoNext(MoveType.Before,
-						i => i.MatchLdarg(0),
-						i => i.MatchLdarg(1),
-						i => i.MatchLdloc(0),
-						i => i.MatchLdloca(2),
-						i => i.MatchCall<ZNetScene>("CreateObjectsSorted")
-					)
-					.Emit(OC.Call, AccessTools.Method(
-						typeof(ServersidePlugin),
-						nameof(ServersidePlugin.GetMaxCreatedPerFrame)))
-					.Emit(OC.Stloc_0);
-			}
 		}
 
 		[HarmonyPatch(typeof(ZNetScene), "CreateDestroyObjects")]

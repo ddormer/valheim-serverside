@@ -84,6 +84,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Class1.cs" />
     <Compile Include="Features.cs" />
     <Compile Include="FeaturesLib.cs" />
     <Compile Include="Debugging.cs" />

@@ -1,6 +1,6 @@
 ﻿using FeaturesLib;
 using HarmonyLib;
-
+using System;
 
 namespace Valheim_Serverside
 {
@@ -26,8 +26,12 @@ namespace Valheim_Serverside
 				{
 					RandEventSystem.instance.ResetRandomEvent();
 				}
+				else if (text.StartsWith("maxobjects"))
+				{
+					ServersidePlugin.configuration.maxObjectsPerFrame.Value = Convert.ToInt32(text.Split(' ').GetValue(1));
+				}
 			}
 		}
-
 	}
+
 }
