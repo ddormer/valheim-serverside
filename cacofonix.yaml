@@ -1,0 +1,35 @@
+# Path in which to find fragments.
+change_fragments_path: .changes
+# Path to the changelog to merge into.
+changelog_path: CHANGELOG.md
+# Marker to add new changes below.
+changelog_marker: |
+  <!-- Generated release notes start. -->
+
+# Type of document to output, valid values are: markdown, rest
+changelog_output_type: markdown
+# Sections available for use. The key is the sub-directory name and the value is
+# the title in the changelog. The default section (omit the `section` key
+# altogether) is always available.
+sections:
+  sdk: Software Development Kit
+# Fragment types available for use. The key is the file extension and the value
+# is a map of section information: The `title` key is the title under which all
+# fragments of the same type will be grouped; the `showcontent` key is a boolean
+# that indicates whether the content for fragments of that type will be
+# displayed, or just a list of issue numbers.
+fragment_types:
+  feature:
+    title: Added
+  change:
+    title: Changed
+  bugfix:
+    title: Fixed
+  doc:
+    title: Documentation
+  removal:
+    title: Removed
+  misc:
+    title: Misc
+    showcontent: False
+

@@ -1,11 +1,11 @@
-﻿using System;
+﻿using BepInEx;
+using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using BepInEx;
-using HarmonyLib;
 using System.Reflection;
-using System.Reflection.Emit;
 using UnityEngine;
+using OpCode = System.Reflection.Emit.OpCode;
 using OpCodes = System.Reflection.Emit.OpCodes;
 using BepInEx.Logging;
 using FeaturesLib;
@@ -110,6 +110,31 @@ namespace Valheim_Serverside
 			}
 		}
 
+		[HarmonyPatch(typeof(ZoneSystem), "IsActiveAreaLoaded")]
+		static class ZoneSystem_IsActiveAreaLoaded_Patch
+		{
+			private static bool Prefix(ZoneSystem __instance, ref bool __result, Dictionary<Vector2i, dynamic> ___m_zones)
+			{
+				foreach (ZNetPeer peer in ZNet.instance.GetPeers())
+				{
+					Vector2i zone = __instance.GetZone(peer.GetRefPos());
+					for (int i = zone.y - __instance.m_activeArea; i <= zone.y + __instance.m_activeArea; i++)
+					{
+						for (int j = zone.x - __instance.m_activeArea; j <= zone.x + __instance.m_activeArea; j++)
+						{
+							if (!___m_zones.ContainsKey(new Vector2i(j, i)))
+							{
+								__result = false;
+								return false;
+							}
+						}
+					}
+				}
+				__result = true;
+				return false;
+			}
+		}
+
 		[HarmonyPatch(typeof(ZoneSystem), "Update")]
 		static class ZoneSystem_Update_Patch
 		/*
@@ -173,21 +198,29 @@ namespace Valheim_Serverside
 				{
 					if (zdo.m_persistent)
 					{
-						List<bool> in_area = new List<bool>();
+						bool anyPlayerInArea = false;
 						foreach (ZNetPeer peer in ZNet.instance.GetPeers())
 						{
-							in_area.Add(ZNetScene.instance.InActiveArea(zdo.GetSector(), ZoneSystem.instance.GetZone(peer.GetRefPos())));
+							if (ZNetScene.instance.InActiveArea(zdo.GetSector(), ZoneSystem.instance.GetZone(peer.GetRefPos())))
+							{
+								anyPlayerInArea = true;
+								break;
+							}
 						}
+
 						if (zdo.m_owner == uid || zdo.m_owner == ZNet.instance.GetUID())
 						{
-							if (!in_area.Contains(true))
+							if (!anyPlayerInArea)
 							{
 								zdo.SetOwner(0L);
 							}
 						}
-
-						else if ((zdo.m_owner == 0L || !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.m_owner }).GetValue<bool>())
-								 && in_area.Contains(true))
+						else if (
+							(zdo.m_owner == 0L
+							|| !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.m_owner }).GetValue<bool>()
+							)
+							&& anyPlayerInArea
+						)
 						{
 							zdo.SetOwner(ZNet.instance.GetUID());
 						}
@@ -420,16 +453,38 @@ namespace Valheim_Serverside
 		[HarmonyPatch(typeof(Ship), "UpdateOwner")]
 		static class Ship_UpdateOwner_Patch
 		/*
-			If the ship has no valid user, set the owner to the server
-			to ensure simulations are updated correctly.
+			This method is invoked on a 4 second timer. 
+
+			Keep the Ship owner set to the Ship's driver.
+
+			If the Ship has no valid user, set the owner to the server
+			to ensure simulations are handled by the server.
+
+			Only change ownership when the Ship's container is not in use,
+			to prevent them from being kicked out of said container.
+
+			Prevent boat from taking impact damage from out of sync water 
+			levels when taking ownership.
 		*/
-		{ 
-			static bool Prefix(ref Ship __instance) {
-				if (!__instance.m_shipControlls.HaveValidUser())
+		{
+			static bool Prefix(ref Ship __instance, ref ZNetView ___m_nview)
+			{
+				ZDO zdo = ___m_nview.GetZDO();
+				if (zdo.GetInt("InUse", 0) == 0)
 				{
-					new Traverse(__instance).Field("m_nview").GetValue<ZNetView>().GetZDO().SetOwner(ZNet.instance.GetUID());
+					if (!__instance.m_shipControlls.HaveValidUser())
+					{
+						new Traverse(__instance).Field("m_lastWaterImpactTime").SetValue(Time.time);
+						zdo.SetOwner(ZNet.instance.GetUID());
+						return false;
+					}
+					ZDOID driver = new Traverse(__instance.m_shipControlls).Method("GetUser").GetValue<ZDOID>();
+					if (!driver.IsNone())
+					{
+						zdo.SetOwner(driver.userID);
+					}
 				}
-				return true;
+				return false;
 			}
 		}
 	}
