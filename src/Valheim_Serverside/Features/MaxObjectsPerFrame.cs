@@ -1,19 +1,24 @@
 ﻿using FeaturesLib;
 using HarmonyLib;
 using MonoMod.Cil;
+using PluginConfiguration;
 
 using OC = Mono.Cecil.Cil.OpCodes;
 
-namespace Valheim_Serverside
+namespace Valheim_Serverside.Features
 {
-	public class MaxObjectsPerFrameFeature
+	public class MaxObjectsPerFrame : IFeature
 	{
-		public static int GetMaxCreatedPerFrame()
+		public bool FeatureEnabled()
 		{
-			return ServersidePlugin.configuration.maxObjectsPerFrame.Value;
+			return Configuration.maxObjectsPerFrameEnabled.Value;
 		}
 
-		[RequiredFeature("MaxObjectsPerFrame")]
+		public static int GetMaxCreatedPerFrame()
+		{
+			return Configuration.maxObjectsPerFrame.Value;
+		}
+
 		[HarmonyPatch(typeof(ZNetScene), "CreateObjects")]
 		public class CreateObjects_Patch
 		/*
@@ -35,8 +40,8 @@ namespace Valheim_Serverside
 						i => i.MatchCall<ZNetScene>("CreateObjectsSorted")
 					)
 					.Emit(OC.Call, AccessTools.Method(
-						typeof(MaxObjectsPerFrameFeature),
-						nameof(MaxObjectsPerFrameFeature.GetMaxCreatedPerFrame)))
+						typeof(MaxObjectsPerFrame),
+						nameof(MaxObjectsPerFrame.GetMaxCreatedPerFrame)))
 					.Emit(OC.Stloc_0);
 			}
 		}

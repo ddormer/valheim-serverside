@@ -1,90 +1,43 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace FeaturesLib
 {
+
+	public interface IFeature
+	{
+		bool FeatureEnabled();
+	}
+
 	public class AvailableFeatures
 	{
-		readonly Dictionary<string, Func<bool>> _features;
+		public readonly List<IFeature> _features;
 
 		public AvailableFeatures()
 		{
-			_features = new Dictionary<string, Func<bool>>();
+			_features = new List<IFeature>();
 		}
 
-		public AvailableFeatures(Dictionary<string, Func<bool>> features)
+		public AvailableFeatures(List<IFeature> features)
 		{
 			_features = features;
 		}
 
-		public AvailableFeatures AddFeature(string name, Func<bool> checker)
+		public AvailableFeatures AddFeature(IFeature feature)
 		{
-			_features.Add(name, checker);
+			_features.Add(feature);
 			return this;
 		}
 
-		public bool IsFeatureEnabled(string feature_name)
+		public List<IFeature> EnabledFeatures()
 		{
-			this._features.TryGetValue(feature_name, out Func<bool> checker);
-			if (checker != null)
-			{
-				return checker();
-			}
-			return false;
-		}
-	}
-
-	//  Harmony support:
-
-	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-	public class RequiredFeatureAttribute : Attribute
-	{
-		public readonly string feature_name;
-
-		public RequiredFeatureAttribute(string feature_name)
-		{
-			this.feature_name = feature_name;
-		}
-	}
-
-	public class HarmonyFeaturesPatcher
-	{
-		private readonly AvailableFeatures _availableFeatures;
-
-		public HarmonyFeaturesPatcher(AvailableFeatures availableFeatures)
-		{
-			_availableFeatures = availableFeatures;
+			return (from feature in _features where feature.FeatureEnabled() select feature).ToList();
 		}
 
-		public void PatchAll(Assembly assembly, Harmony harmony_instance, bool feature_required = false)
+		public Type[] GetAllNestedTypes()
 		{
-			foreach (Type type in AccessTools.GetTypesFromAssembly(assembly))
-			{
-				List<RequiredFeatureAttribute> attributes = type.GetCustomAttributes<RequiredFeatureAttribute>().ToList();
-
-				if (feature_required && attributes.Count == 0)
-				{
-					continue;
-				}
-
-				bool enabled = true;
-
-				foreach (RequiredFeatureAttribute attribute in attributes)
-				{
-					if (!_availableFeatures.IsFeatureEnabled(attribute.feature_name))
-					{
-						enabled = false;
-					}
-				}
-
-				if (enabled)
-				{
-					new PatchClassProcessor(harmony_instance, type).Patch();
-				}
-			}
+			return (from list in EnabledFeatures().Select(feature => feature.GetType().GetNestedTypes()) from item in list select item).ToArray();
 		}
 	}
 }
