@@ -1,20 +1,16 @@
-﻿using System;
+﻿using BepInEx;
+using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using BepInEx;
-using HarmonyLib;
 using System.Reflection;
 using UnityEngine;
-
-using MonoMod.Cil;
-
-using OpCodes = System.Reflection.Emit.OpCodes;
 using OpCode = System.Reflection.Emit.OpCode;
-using OC = Mono.Cecil.Cil.OpCodes;
+using OpCodes = System.Reflection.Emit.OpCodes;
 
 namespace Valheim_Serverside
 {
-	[BepInPlugin("MVP.Valheim_Serverside_Simulations", "Serverside Simulations", "1.0.1")]
+	[BepInPlugin("MVP.Valheim_Serverside_Simulations", "Serverside Simulations", "1.0.3")]
 	public class ServersidePlugin : BaseUnityPlugin
 	{
 		private static ServersidePlugin context;
@@ -66,7 +62,7 @@ namespace Valheim_Serverside
 			System.Diagnostics.Trace.WriteLine(string.Concat(obj));
 		}
 
-		#if DEBUG
+#if DEBUG
 		[HarmonyPatch(typeof(Chat), "RPC_ChatMessage")]
 		static class Chat_RPC_ChatMessage_Patch
 		{
@@ -162,12 +158,27 @@ namespace Valheim_Serverside
 			}
 		}
 
-		[HarmonyPatch(typeof(ZNetScene), "InLoadingScreen")]
-		private static class ZNetScene_InLoadingScreen_Patch
+		[HarmonyPatch(typeof(ZoneSystem), "IsActiveAreaLoaded")]
+		static class ZoneSystem_IsActiveAreaLoaded_Patch
 		{
-			private static bool Prefix(ref bool __result)
+			private static bool Prefix(ZoneSystem __instance, ref bool __result, Dictionary<Vector2i, dynamic> ___m_zones)
 			{
-				__result = false;
+				foreach (ZNetPeer peer in ZNet.instance.GetPeers())
+				{
+					Vector2i zone = __instance.GetZone(peer.GetRefPos());
+					for (int i = zone.y - __instance.m_activeArea; i <= zone.y + __instance.m_activeArea; i++)
+					{
+						for (int j = zone.x - __instance.m_activeArea; j <= zone.x + __instance.m_activeArea; j++)
+						{
+							if (!___m_zones.ContainsKey(new Vector2i(j, i)))
+							{
+								__result = false;
+								return false;
+							}
+						}
+					}
+				}
+				__result = true;
 				return false;
 			}
 		}
@@ -253,7 +264,7 @@ namespace Valheim_Serverside
 							}
 						}
 						else if (
-							(zdo.m_owner == 0L 
+							(zdo.m_owner == 0L
 							|| !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.m_owner }).GetValue<bool>()
 							)
 							&& anyPlayerInArea
@@ -463,55 +474,6 @@ namespace Valheim_Serverside
 			}
 		}
 
-		[HarmonyPatch(typeof(ZDOMan), "RPC_ZDOData")]
-		public class ZDOMan_RPC_ZDODataPatch
-		{
-			static void CheckShouldOwn(ZDO zdo, bool isNew)
-			{
-				long myid = ZNet.instance.GetUID();
-				long owner = zdo.m_owner;
-				if (isNew && owner != 0L && owner != myid)
-				{
-					int prefabHash = zdo.GetPrefab();
-					GameObject prefab = ZNetScene.instance.GetPrefab(prefabHash);
-					// Only take control of building pieces for now
-					// TODO: See if this should be expanded
-					if (prefab != null && prefab.GetComponent<Piece>() != null)
-					{
-						#if DEBUG
-						context.Logger.LogInfo($"Taking ownership of new ZDO (player id: {owner} id: {zdo.m_uid} name: {prefab.name}");
-						#endif
-						zdo.SetOwner(myid);
-						return;
-					}
-				}
-			}
-
-			public static void ILManipulator(ILContext il)
-			{
-				int idx_stZDO = 0;
-				int idx_stZDOIsNew = 0;
-
-				new ILCursor(il)
-					.GotoNext(
-						i => i.MatchCall<ZDOMan>("CreateNewZDO"),
-						i => i.MatchStloc(out idx_stZDO),
-						i => i.MatchLdcI4(out _),
-						i => i.MatchStloc(out idx_stZDOIsNew)
-					)
-					.GotoNext(MoveType.After,
-						i => i.MatchLdloc(out _),
-						i => i.MatchLdloc(out _),
-						i => i.MatchCallvirt<ZDO>("Deserialize")
-					)
-					.Emit(OC.Ldloc, idx_stZDO)
-					.Emit(OC.Ldloc, idx_stZDOIsNew)
-					.Emit(OC.Call, AccessTools.Method(typeof(ZDOMan_RPC_ZDODataPatch),
-													  nameof(ZDOMan_RPC_ZDODataPatch.CheckShouldOwn)))
-				;
-			}
-		}
-
 		[HarmonyPatch(typeof(ZRoutedRpc), "RouteRPC")]
 		static class ZRoutedRpc_RouteRPC_Patch
 		/*
@@ -539,16 +501,38 @@ namespace Valheim_Serverside
 		[HarmonyPatch(typeof(Ship), "UpdateOwner")]
 		static class Ship_UpdateOwner_Patch
 		/*
-			If the ship has no valid user, set the owner to the server
-			to ensure simulations are updated correctly.
+			This method is invoked on a 4 second timer. 
+
+			Keep the Ship owner set to the Ship's driver.
+
+			If the Ship has no valid user, set the owner to the server
+			to ensure simulations are handled by the server.
+
+			Only change ownership when the Ship's container is not in use,
+			to prevent them from being kicked out of said container.
+
+			Prevent boat from taking impact damage from out of sync water 
+			levels when taking ownership.
 		*/
-		{ 
-			static bool Prefix(ref Ship __instance) {
-				if (!__instance.m_shipControlls.HaveValidUser())
+		{
+			static bool Prefix(ref Ship __instance, ref ZNetView ___m_nview)
+			{
+				ZDO zdo = ___m_nview.GetZDO();
+				if (zdo.GetInt("InUse", 0) == 0)
 				{
-					new Traverse(__instance).Field("m_nview").GetValue<ZNetView>().GetZDO().SetOwner(ZNet.instance.GetUID());
+					if (!__instance.m_shipControlls.HaveValidUser())
+					{
+						new Traverse(__instance).Field("m_lastWaterImpactTime").SetValue(Time.time);
+						zdo.SetOwner(ZNet.instance.GetUID());
+						return false;
+					}
+					ZDOID driver = new Traverse(__instance.m_shipControlls).Method("GetUser").GetValue<ZDOID>();
+					if (!driver.IsNone())
+					{
+						zdo.SetOwner(driver.userID);
+					}
 				}
-				return true;
+				return false;
 			}
 		}
 	}
