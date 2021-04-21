@@ -466,7 +466,7 @@ namespace Valheim_Serverside
 		[HarmonyPatch(typeof(Ship), "UpdateOwner")]
 		static class Ship_UpdateOwner_Patch
 		/*
-			This method is inovked on a 4 second timer. 
+			This method is invoked on a 4 second timer. 
 
 			Keep the Ship owner set to the Ship's driver.
 
