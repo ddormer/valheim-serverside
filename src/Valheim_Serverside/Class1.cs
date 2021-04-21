@@ -8,7 +8,7 @@ namespace Valheim_Serverside
 {
 	public class MaxObjectsPerFrameFeature
 	{
-		public int GetMaxCreatedPerFrame()
+		public static int GetMaxCreatedPerFrame()
 		{
 			return ServersidePlugin.configuration.maxObjectsPerFrame.Value;
 		}
