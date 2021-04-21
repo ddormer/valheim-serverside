@@ -1,3 +1,11 @@
+## [1.0.3] - 2021-04-21
+
+### Fixed
+
+- Fix Ship container access and improve Ship ownership transfer
+- Fix Ship taking 10 damage when owner changes to server.
+
+
 ## [1.0.2] - 2021-04-19
 
 ### Fixed
