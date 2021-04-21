@@ -1,4 +1,6 @@
 ﻿using BepInEx;
+using BepInEx.Logging;
+using FeaturesLib;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -7,8 +9,6 @@ using System.Reflection;
 using UnityEngine;
 using OpCode = System.Reflection.Emit.OpCode;
 using OpCodes = System.Reflection.Emit.OpCodes;
-using BepInEx.Logging;
-using FeaturesLib;
 
 namespace Valheim_Serverside
 {

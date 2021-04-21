@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FeaturesLib;
 using HarmonyLib;
-using FeaturesLib;
 
 
 namespace Valheim_Serverside
 {
 	[Harmony]
 	class Debugging
-    {
-        [RequiredFeature("debug")]
+	{
+		[RequiredFeature("debug")]
 		[HarmonyPatch(typeof(Chat), "RPC_ChatMessage")]
 		public static class Chat_RPC_ChatMessage_Patch
 		{
