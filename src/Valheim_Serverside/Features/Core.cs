@@ -10,7 +10,7 @@ using OpCodes = System.Reflection.Emit.OpCodes;
 
 namespace Valheim_Serverside.Features
 {
-	class Core : IFeature
+	public class Core : IFeature
 	{
 		public bool FeatureEnabled()
 		{
@@ -33,7 +33,7 @@ namespace Valheim_Serverside.Features
 		}
 
 		[HarmonyPatch(typeof(ZNetScene), "CreateDestroyObjects")]
-		private class CreateDestroyObjects_Patch
+		public class CreateDestroyObjects_Patch
 		/*
 			The bread and butter of the mod, this patch facilitates spawning objects on the server.
 
@@ -75,7 +75,7 @@ namespace Valheim_Serverside.Features
 		}
 
 		[HarmonyPatch(typeof(ZoneSystem), "IsActiveAreaLoaded")]
-		static class ZoneSystem_IsActiveAreaLoaded_Patch
+		public static class ZoneSystem_IsActiveAreaLoaded_Patch
 		{
 			private static bool Prefix(ZoneSystem __instance, ref bool __result, Dictionary<Vector2i, dynamic> ___m_zones)
 			{
@@ -100,7 +100,7 @@ namespace Valheim_Serverside.Features
 		}
 
 		[HarmonyPatch(typeof(ZoneSystem), "Update")]
-		static class ZoneSystem_Update_Patch
+		public static class ZoneSystem_Update_Patch
 		/*
 			Creates Local-Zones for each peer position. Enabling simulation to be handled by the server.
 
@@ -142,7 +142,7 @@ namespace Valheim_Serverside.Features
 		}
 
 		[HarmonyPatch(typeof(ZDOMan), "ReleaseNearbyZDOS")]
-		static class ZDOMan_ReleaseNearbyZDOS_Patch
+		public static class ZDOMan_ReleaseNearbyZDOS_Patch
 		/*
 			Releases nearby ZDOs for a player if no other peers are nearby that player.
 			If instead the nearby ZDO has no owner, set owner to server so that it simulates on the server.
@@ -195,7 +195,7 @@ namespace Valheim_Serverside.Features
 		}
 
 		[HarmonyPatch(typeof(RandEventSystem), "FixedUpdate")]
-		static class RandEventSystem_FixedUpdate_Patch
+		public static class RandEventSystem_FixedUpdate_Patch
 		/*
 			Patches out m_localPlayer == null check by reversing the boolean check
 			and instead of:
@@ -312,7 +312,7 @@ namespace Valheim_Serverside.Features
 		}
 
 		[HarmonyPatch(typeof(SpawnSystem), "UpdateSpawning")]
-		static class SpawnSystem_UpdateSpawning_Patch
+		public static class SpawnSystem_UpdateSpawning_Patch
 		/*
 			Patches out m_localPlayer == null check in SpawnSystem.UpdateSpawning
 			by reversing the boolean check.
@@ -352,7 +352,7 @@ namespace Valheim_Serverside.Features
 					// replace GetCurrentSpawners with call to our method.
 					if (getCurrentSpawners.Check(instruction))
 					{
-						yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ServersidePlugin), "GetCurrentSpawners"));
+						yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Core), "GetCurrentSpawners"));
 						continue;
 					}
 					if (localPlayerCheck.Check(instruction))
@@ -366,7 +366,7 @@ namespace Valheim_Serverside.Features
 		}
 
 		[HarmonyPatch(typeof(ZNetScene), "OutsideActiveArea", new Type[] { typeof(Vector3) })]
-		private class ZNetScene_OutsideActiveArea_Patch
+		public static class ZNetScene_OutsideActiveArea_Patch
 		/*
 			Originally uses `ZNet.GetReferencePosition` to determine active area but with the server 
 			handling all areas, it must check if the `Vector3` is within any of the peers' active areas.
@@ -391,7 +391,7 @@ namespace Valheim_Serverside.Features
 		}
 
 		[HarmonyPatch(typeof(ZRoutedRpc), "RouteRPC")]
-		static class ZRoutedRpc_RouteRPC_Patch
+		public static class ZRoutedRpc_RouteRPC_Patch
 		/*
 			When a client requests to be the "user" (driver) of a ship this RPC method
 			is sent from the current ship owner when they accept the request.
@@ -415,7 +415,7 @@ namespace Valheim_Serverside.Features
 		}
 
 		[HarmonyPatch(typeof(Ship), "UpdateOwner")]
-		static class Ship_UpdateOwner_Patch
+		public static class Ship_UpdateOwner_Patch
 		/*
 			This method is invoked on a 4 second timer. 
 
