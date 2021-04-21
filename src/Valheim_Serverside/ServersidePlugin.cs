@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Logging;
 using FeaturesLib;
 using HarmonyLib;
 using System;
@@ -16,7 +15,6 @@ namespace Valheim_Serverside
 	[BepInPlugin("MVP.Valheim_Serverside_Simulations", "Serverside Simulations", "1.0.1")]
 	public class ServersidePlugin : BaseUnityPlugin
 	{
-		public static ManualLogSource logger;
 
 		private static ServersidePlugin context;
 
@@ -24,7 +22,6 @@ namespace Valheim_Serverside
 
 		private void Awake()
 		{
-			logger = Logger;
 			context = this;
 			configuration = new Configuration(Config);
 
