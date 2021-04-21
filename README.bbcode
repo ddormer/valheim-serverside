@@ -11,6 +11,12 @@ Run world and monster simulations on a [b]dedicated server[/b].
 
 Updated for patch: 0.150.3
 
+[b][size=5]Features[/size][/b]
+[list]
+[*]Server simulates world and AI physics.
+[*]Client FPS improvements
+[*]Ships are simulated by the driver to improve the steering experience with high latency.
+[/list]
 [b][size=5]Caveats[/size][/b]
 [list]
 [*]This mod dramatically increases server resource usage and may lead to a poor gameplay experience.
@@ -32,10 +38,6 @@ Ordinarily, to keep server resource usage low, the Valheim server will hand off 
 
 This dedicated server mod causes terrain, monsters and other objects that are normally created and owned by clients to instead be created on—and thus owned and simulated by—the server.
 
-[b][size=5]Known issues[/size][/b]
-[list]
-[*]When using a Ship&#39;s chest/container, you may get kicked out of the chest UI. A fix for this is being worked on.
-[/list]
 [b][size=4]For mod developers - compatibility with Serverside Simulations[/size][/b]
 
 For mod developers interested in maintaining compatibility with Serverside Simulations:
