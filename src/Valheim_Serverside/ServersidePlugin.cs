@@ -11,8 +11,10 @@ using OpCodes = System.Reflection.Emit.OpCodes;
 
 namespace Valheim_Serverside
 {
+
 	[Harmony]
-	[BepInPlugin("MVP.Valheim_Serverside_Simulations", "Serverside Simulations", "1.0.1")]
+	[BepInPlugin("MVP.Valheim_Serverside_Simulations", "Serverside Simulations", "1.0.3")]
+
 	public class ServersidePlugin : BaseUnityPlugin
 	{
 
