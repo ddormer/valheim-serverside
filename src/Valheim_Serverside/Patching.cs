@@ -11,6 +11,7 @@ namespace PatchingLib
 		string Name { get; }
 		Func<bool> Checker { get; }
 	}
+
 	public class PatchRequirements
 	{
 		readonly Dictionary<string, Func<bool>> _requirements;

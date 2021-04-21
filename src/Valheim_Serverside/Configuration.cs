@@ -15,7 +15,6 @@ namespace PluginConfiguration
 
 			maxObjectsPerFrameEnabled = config.Bind<bool>("MaxObjectsPerFrame", "Enabled", true, "Enable or disable the feature");
 			maxObjectsPerFrame = config.Bind<int>("MaxObjectsPerFrame", "MaxObjects", 500, "Maximum number of objects the server can create per frame");
-
 		}
 	}
 }

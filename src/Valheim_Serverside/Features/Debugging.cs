@@ -10,7 +10,6 @@ namespace Valheim_Serverside.Features
 	{
 		public bool FeatureEnabled()
 		{
-
 			return Utilities.IsDebugBuild();
 		}
 
@@ -35,7 +34,6 @@ namespace Valheim_Serverside.Features
 				}
 				else if (text.StartsWith("maxobjects"))
 				{
-					ZLog.Log("FOBAR HELLO");
 					Configuration.maxObjectsPerFrame.Value = Convert.ToInt32(text.Split(' ').GetValue(1));
 				}
 			}
