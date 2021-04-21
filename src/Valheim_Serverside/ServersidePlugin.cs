@@ -1,16 +1,12 @@
-﻿using System;
+﻿using BepInEx;
+using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using BepInEx;
-using HarmonyLib;
 using System.Reflection;
 using UnityEngine;
-
-using MonoMod.Cil;
-
-using OpCodes = System.Reflection.Emit.OpCodes;
 using OpCode = System.Reflection.Emit.OpCode;
-using OC = Mono.Cecil.Cil.OpCodes;
+using OpCodes = System.Reflection.Emit.OpCodes;
 
 namespace Valheim_Serverside
 {
@@ -61,7 +57,7 @@ namespace Valheim_Serverside
 			System.Diagnostics.Trace.WriteLine(string.Concat(obj));
 		}
 
-		#if DEBUG
+#if DEBUG
 		[HarmonyPatch(typeof(Chat), "RPC_ChatMessage")]
 		static class Chat_RPC_ChatMessage_Patch
 		{
@@ -82,7 +78,7 @@ namespace Valheim_Serverside
 				}
 			}
 		}
-		#endif
+#endif
 
 
 		[HarmonyPatch(typeof(ZNetScene), "CreateDestroyObjects")]
@@ -233,7 +229,7 @@ namespace Valheim_Serverside
 							}
 						}
 						else if (
-							(zdo.m_owner == 0L 
+							(zdo.m_owner == 0L
 							|| !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.m_owner }).GetValue<bool>()
 							)
 							&& anyPlayerInArea
@@ -484,10 +480,11 @@ namespace Valheim_Serverside
 			levels when taking ownership.
 		*/
 		{
-			static bool Prefix(ref Ship __instance, ref ZNetView ___m_nview) {
+			static bool Prefix(ref Ship __instance, ref ZNetView ___m_nview)
+			{
 				ZDO zdo = ___m_nview.GetZDO();
 				if (zdo.GetInt("InUse", 0) == 0)
-                {
+				{
 					if (!__instance.m_shipControlls.HaveValidUser())
 					{
 						new Traverse(__instance).Field("m_lastWaterImpactTime").SetValue(Time.time);
@@ -499,7 +496,7 @@ namespace Valheim_Serverside
 					{
 						zdo.SetOwner(driver.userID);
 					}
-                }
+				}
 				return false;
 			}
 		}
