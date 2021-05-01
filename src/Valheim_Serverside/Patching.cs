@@ -68,16 +68,7 @@ namespace PatchingLib
 			foreach (Type type in types)
 			{
 				var attributes = type.GetCustomAttributes<PatchRequiresAttribute>().ToList();
-
-				bool enabled = true;
-
-				foreach (PatchRequiresAttribute attribute in attributes)
-				{
-					if (!_patchRequirements.IsAllowed(attribute.requirement_name))
-					{
-						enabled = false;
-					}
-				}
+				bool enabled = !attributes.Any(attribute => !_patchRequirements.IsAllowed(attribute.requirement_name));
 				if (enabled)
 				{
 					ZLog.Log("Patching: " + type.ToString());

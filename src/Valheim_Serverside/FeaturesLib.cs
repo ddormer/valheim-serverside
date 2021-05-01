@@ -32,7 +32,7 @@ namespace FeaturesLib
 
 		public List<IFeature> EnabledFeatures()
 		{
-			return (from feature in _features where feature.FeatureEnabled() select feature).ToList();
+			return _features.Where(feature => feature.FeatureEnabled()).ToList();
 		}
 
 		public Type[] GetAllNestedTypes()
