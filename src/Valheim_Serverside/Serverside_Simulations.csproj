@@ -84,14 +84,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Features.cs" />
+    <Compile Include="Features\Core.cs" />
+    <Compile Include="Utils.cs" />
+    <Compile Include="Patching.cs" />
+    <Compile Include="Features\MaxObjectsPerFrame.cs" />
+    <Compile Include="Requirements.cs" />
     <Compile Include="FeaturesLib.cs" />
-    <Compile Include="Debugging.cs" />
+    <Compile Include="Features\Debugging.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="SequentialInstructions.cs" />
     <Compile Include="ServersidePlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent Condition="'$(BuildingInsideVisualStudio)' == true">set SCRIPT=$(SolutionDir)\bin\post_build.bat

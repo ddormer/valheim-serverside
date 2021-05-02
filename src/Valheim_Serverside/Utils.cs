@@ -1,8 +1,8 @@
 ﻿namespace Valheim_Serverside
 {
-	class FeatureCheckers
+	public class Utilities
 	{
-		public static bool IsDebug()
+		public static bool IsDebugBuild()
 		{
 #if DEBUG
 			return true;
@@ -10,6 +10,4 @@
 			return false;
 		}
 	}
-
-
 }

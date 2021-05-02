@@ -1,13 +1,19 @@
-﻿using FeaturesLib;
-using HarmonyLib;
+﻿using HarmonyLib;
+using PluginConfiguration;
+using Requirements;
+using System;
 
-
-namespace Valheim_Serverside
+namespace Valheim_Serverside.Features
 {
 	[Harmony]
-	class Debugging
+	class Debugging : FeaturesLib.IFeature
 	{
-		[RequiredFeature("debug")]
+		public bool FeatureEnabled()
+		{
+			return Utilities.IsDebugBuild();
+		}
+
+		[PatchingLib.PatchRequires(PatchRequirement.DebugBuild.name)]
 		[HarmonyPatch(typeof(Chat), "RPC_ChatMessage")]
 		public static class Chat_RPC_ChatMessage_Patch
 		{
@@ -26,8 +32,12 @@ namespace Valheim_Serverside
 				{
 					RandEventSystem.instance.ResetRandomEvent();
 				}
+				else if (text.StartsWith("maxobjects"))
+				{
+					Configuration.maxObjectsPerFrame.Value = Convert.ToInt32(text.Split(' ').GetValue(1));
+				}
 			}
 		}
-
 	}
+
 }
