@@ -23,6 +23,10 @@ jobs:
       run: |
         dotnet contrib/depotdownloader-2.3.6/DepotDownloader.dll -app 896660 -os windows -filelist .depot-downloader-file-list.txt -dir serverfiles
         
+    - name: Publicize Assemblies
+      run: |
+        contrib/AssemblyPublicizer-1.1.0/AssemblyPublicizer.exe serverfiles/valheim_server_Data/Managed/assembly_valheim.dll ../ValheimLibs
+        
     - name: build
       run: |
         xcopy /E /I lib ..\ValheimLibs
