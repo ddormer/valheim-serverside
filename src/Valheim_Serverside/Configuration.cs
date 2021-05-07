@@ -14,7 +14,7 @@ namespace PluginConfiguration
 			modEnabled = config.Bind<bool>("General", "Enabled", true, "Enable or disable the mod");
 
 			maxObjectsPerFrameEnabled = config.Bind<bool>("MaxObjectsPerFrame", "Enabled", true, "Enable or disable the feature");
-			maxObjectsPerFrame = config.Bind<int>("MaxObjectsPerFrame", "MaxObjects", 500, "Maximum number of objects the server can create per frame. The original Valheim value is 100.");
+			maxObjectsPerFrame = config.Bind<int>("MaxObjectsPerFrame", "MaxObjects", 100, "Maximum number of objects the server can create per frame.");
 		}
 	}
 }
