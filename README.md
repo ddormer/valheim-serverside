@@ -27,6 +27,10 @@ Updated for patch: 0.150.3
  2. Copy plugin DLL into the BepInEx/plugins/ directory on your dedicated server.
  3. You're done! No client-side changes are needed.
 
+### Configuration
+
+- MaxObjectsPerFrame.MaxObjects can be increased to improve the loading times of areas on the server, at the expense of CPU usage. A value of 500 seems to improve loading for some people but we'd love to have more feedback on it.
+
 ### Why?
 
 Ordinarily, to keep server resource usage low, the Valheim server will hand off simulation of an area to the first client that enters said area. However, if the player in charge of the area has a poor connection all other players in that area will suffer. This mod is an attempt at improving that specific situation at the cost of increased latency for the client which would ordinarily own the area.
