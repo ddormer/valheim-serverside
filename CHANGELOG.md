@@ -1,3 +1,10 @@
+## [1.1.0] - 2021-05-07
+
+### Added
+
+- Added "max objects per frame" configuration. Allowing for faster or slower area loading on the server.
+
+
 ## [1.0.3] - 2021-04-21
 
 ### Fixed
