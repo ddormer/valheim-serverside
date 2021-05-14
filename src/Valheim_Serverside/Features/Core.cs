@@ -503,7 +503,9 @@ namespace Valheim_Serverside.Features
 
 				new ILCursor(il).GotoNext(MoveType.Before,
 						i => i.MatchCallOrCallvirt<IWaterInteractable>("IsOwner")
-					).Remove().Emit(OC.Call, AccessTools.Method(
+					)
+					.Remove()
+					.Emit(OC.Call, AccessTools.Method(
 						typeof(Core),
 						nameof(Core.UpdateFloaters)));
 			}
