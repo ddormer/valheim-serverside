@@ -462,7 +462,7 @@ namespace Valheim_Serverside.Features
 		 * `Fish.FindFloat` to discover all nearby instances of `FishingFloat`.
 		*/
 		{
-			static void Prefix(ref FishingFloat __instance)
+			static void Prefix(FishingFloat __instance)
 			{
 				new Traverse(__instance).Field("m_allInstances").GetValue<List<FishingFloat>>().Add(__instance);
 			}
@@ -474,7 +474,7 @@ namespace Valheim_Serverside.Features
 		 * Clean up previously added `FishingFloat` instance from `m_allInstances`.
 		*/
 		{
-			static void Prefix(ref FishingFloat __instance)
+			static void Prefix(FishingFloat __instance)
 			{
 				new Traverse(__instance).Field("m_allInstances").GetValue<List<FishingFloat>>().Remove(__instance);
 			}
