@@ -1,12 +1,15 @@
 ﻿using FeaturesLib;
 using HarmonyLib;
+using MonoMod.Cil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using OC = Mono.Cecil.Cil.OpCodes;
 using OpCode = System.Reflection.Emit.OpCode;
 using OpCodes = System.Reflection.Emit.OpCodes;
+
 
 namespace Valheim_Serverside.Features
 {
@@ -449,6 +452,62 @@ namespace Valheim_Serverside.Features
 					}
 				}
 				return false;
+			}
+		}
+
+		[HarmonyPatch(typeof(FishingFloat), "Awake")]
+		public static class FishingFloat_Awake_Patch
+		/*
+		 * Add this instance to `FishingFloat.m_allInstances` to allow for other code: 
+		 * `Fish.FindFloat` to discover all nearby instances of `FishingFloat`.
+		*/
+		{
+			static void Prefix(FishingFloat __instance)
+			{
+				new Traverse(__instance).Field("m_allInstances").GetValue<List<FishingFloat>>().Add(__instance);
+			}
+		}
+
+		[HarmonyPatch(typeof(FishingFloat), "OnDestroy")]
+		public static class FishingFloat_OnDestroy_Patch
+		/*
+		 * Clean up previously added `FishingFloat` instance from `m_allInstances`.
+		*/
+		{
+			static void Prefix(FishingFloat __instance)
+			{
+				new Traverse(__instance).Field("m_allInstances").GetValue<List<FishingFloat>>().Remove(__instance);
+			}
+		}
+
+		public static bool UpdateFloaters(IWaterInteractable waterInteractable)
+		{
+			MonoBehaviour maybeFishingFloat = waterInteractable as MonoBehaviour;
+			if (maybeFishingFloat != null && maybeFishingFloat.GetComponent<FishingFloat>() != null)
+			{
+				return true;
+			}
+			return waterInteractable.IsOwner();
+		}
+
+		[HarmonyPatch(typeof(WaterVolume), "UpdateFloaters")]
+		public class WaterVolume_UpdateFloaters_Patch
+		/*
+		 * Replace the `IWaterInteractable.IsOwner` call with our own
+		 * method that checks if the object is a `FishingFloat` and then
+		 * ignores the owner check.
+		 */
+		{
+			public static void ILManipulator(ILContext il)
+			{
+
+				new ILCursor(il).GotoNext(MoveType.Before,
+						i => i.MatchCallOrCallvirt<IWaterInteractable>("IsOwner")
+					)
+					.Remove()
+					.Emit(OC.Call, AccessTools.Method(
+						typeof(Core),
+						nameof(Core.UpdateFloaters)));
 			}
 		}
 	}
