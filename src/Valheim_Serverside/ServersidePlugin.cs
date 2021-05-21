@@ -1,4 +1,6 @@
 ﻿using BepInEx;
+using BepInEx.Bootstrap;
+using BepInEx.Logging;
 using FeaturesLib;
 using HarmonyLib;
 using PatchingLib;
@@ -10,6 +12,7 @@ namespace Valheim_Serverside
 
 	[Harmony]
 	[BepInPlugin("MVP.Valheim_Serverside_Simulations", "Serverside Simulations", "1.1.0")]
+	[BepInDependency(ValheimPlusPluginId, BepInDependency.DependencyFlags.SoftDependency)]
 
 	public class ServersidePlugin : BaseUnityPlugin
 	{
@@ -18,9 +21,18 @@ namespace Valheim_Serverside
 
 		public static Configuration configuration;
 
+		public static Harmony harmony;
+
+		public const string ValheimPlusPluginId = "org.bepinex.plugins.valheim_plus";
+
+		public static bool haveValheimPlus;
+
+		public static ManualLogSource logger;
+
 		private void Awake()
 		{
 			context = this;
+			logger = Logger;
 
 			Configuration.Load(Config);
 
@@ -30,15 +42,19 @@ namespace Valheim_Serverside
 				return;
 			}
 
+			haveValheimPlus = Chainloader.PluginInfos.ContainsKey(ValheimPlusPluginId);
+
+			harmony = new Harmony("MVP.Valheim_Serverside_Simulations");
+
 			AvailableFeatures availableFeatures = new AvailableFeatures();
 			availableFeatures.AddFeature(new Features.Core());
 			availableFeatures.AddFeature(new Features.MaxObjectsPerFrame());
 			availableFeatures.AddFeature(new Features.Debugging());
+			availableFeatures.AddFeature(new Features.Compat_ValheimPlus());
 
 			PatchRequirements patchRequirements = new PatchRequirements();
 			patchRequirements.AddRequirement(new PatchRequirement.DebugBuild());
 
-			Harmony harmony = new Harmony("MVP.Valheim_Serverside_Simulations");
 			new HarmonyFeaturesPatcher(patchRequirements).PatchAll(availableFeatures.GetAllNestedTypes(), harmony);
 
 			Logger.LogInfo("Serverside Simulations installed");
