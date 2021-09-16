@@ -1,0 +1,6 @@
+type: change
+section: null
+issues: {}
+feature_flags: []
+description: |-
+  Remove old fishing fixes (appears to have been fixed in latest Valheim patch)
