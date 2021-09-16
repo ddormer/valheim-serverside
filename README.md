@@ -6,7 +6,7 @@
 
 Run world and monster simulations on a **dedicated server**.
 
-Updated for patch: 0.156.2
+Updated for patch: 0.156.2 [Currently in beta for Hearth & Home 0.202.14]
 
 ### Features
 - Server simulates world and AI physics.
