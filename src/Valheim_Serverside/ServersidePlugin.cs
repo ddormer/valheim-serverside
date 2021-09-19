@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using FeaturesLib;
 using HarmonyLib;
@@ -25,8 +24,6 @@ namespace Valheim_Serverside
 
 		public const string ValheimPlusPluginId = "org.bepinex.plugins.valheim_plus";
 
-		public static bool haveValheimPlus;
-
 		public static ManualLogSource logger;
 
 		private void Awake()
@@ -41,8 +38,6 @@ namespace Valheim_Serverside
 				Logger.LogInfo("Serverside Simulations is disabled");
 				return;
 			}
-
-			haveValheimPlus = Chainloader.PluginInfos.ContainsKey(ValheimPlusPluginId);
 
 			harmony = new Harmony("MVP.Valheim_Serverside_Simulations");
 

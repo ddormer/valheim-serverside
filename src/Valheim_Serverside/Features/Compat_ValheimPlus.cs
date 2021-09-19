@@ -1,5 +1,7 @@
 ﻿using FeaturesLib;
+using PatchingLib;
 using HarmonyLib;
+using BepInEx.Bootstrap;
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
@@ -8,41 +10,46 @@ namespace Valheim_Serverside.Features
 {
 	public class Compat_ValheimPlus : IFeature
 	{
-		public bool FeatureEnabled()
-		{
-			// TODO: config
-			return true;
-		}
+		public bool haveValheimPlus = false;
 
 		public Compat_ValheimPlus()
 		{
-			TryPatchInventoryAssistant();
+			haveValheimPlus = Chainloader.PluginInfos.ContainsKey(ServersidePlugin.ValheimPlusPluginId);
+			if (haveValheimPlus)
+			{
+				TryPatchInventoryAssistant();
+				ServersidePlugin.harmony.Patch(
+					AccessTools.Method(typeof(ZNetScene), "Awake"),
+					postfix: new HarmonyMethod(typeof(ZNetScene_Awake_Patch), nameof(ZNetScene_Awake_Patch.Postfix))
+				);
+			}
 		}
 
-		[HarmonyPatch(typeof(ZNetScene), "Awake")]
+		public bool FeatureEnabled()
+		{
+			// TODO: config?
+			return haveValheimPlus;
+		}
+
 		public class ZNetScene_Awake_Patch
 		{
-			static bool patchedSmelter = false;
+			static bool triedToPatchSmelter = false;
 
 			public static void Postfix()
 			{
 				// This needs to run after ObjectDB has been initialized, otherwise
-				// we get null reference exceptions trying to initialize the type
-				if (!patchedSmelter)
+				// we get null reference exceptions trying to initialize the type.
+				// Only attempt to patch once.
+				if (!triedToPatchSmelter)
 				{
 					TryPatchSmelter();
-					patchedSmelter = true;
+					triedToPatchSmelter = true;
 				}
 			}
 		}
 
-		private static void TryPatchInventoryAssistant()
+		private void TryPatchInventoryAssistant()
 		{
-			if (!ServersidePlugin.haveValheimPlus)
-			{
-				return;
-			}
-
 			Type InventoryAssistant = Type.GetType("ValheimPlus.InventoryAssistant, ValheimPlus");
 			if (InventoryAssistant != null)
 			{
@@ -60,11 +67,6 @@ namespace Valheim_Serverside.Features
 
 		private static void TryPatchSmelter()
 		{
-			if (!ServersidePlugin.haveValheimPlus)
-			{
-				return;
-			}
-
 			Type Smelter_FixedUpdate_Patch = Type.GetType("ValheimPlus.GameClasses.Smelter_FixedUpdate_Patch, ValheimPlus");
 			if (Smelter_FixedUpdate_Patch != null)
 			{
@@ -83,7 +85,7 @@ namespace Valheim_Serverside.Features
 		private static IEnumerable<CodeInstruction> Transpile_InventoryAssistant_GetNearbyChests(IEnumerable<CodeInstruction> instructions)
 		{
 			return new CodeMatcher(instructions)
-				// Remove Container.CheckAccess call
+				// Replace Container.CheckAccess call with Ldc_I4_1 (true)
 				.MatchForward(false,
 					new CodeMatch(OpCodes.Ldloc_S),
 					new CodeMatch(OpCodes.Ldsfld, AccessTools.Field(typeof(Player), nameof(Player.m_localPlayer))),
