@@ -1,3 +1,10 @@
+## [1.1.2] - 2021-09-16
+
+### Changed
+
+- Remove old fishing fixes (appears to have been fixed in latest Valheim patch)
+
+
 ## [1.1.1] - 2021-05-14
 
 ### Changed
