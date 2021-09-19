@@ -67,18 +67,18 @@ namespace Valheim_Serverside.Features
 
 		private static void TryPatchSmelter()
 		{
-			Type Smelter_FixedUpdate_Patch = Type.GetType("ValheimPlus.GameClasses.Smelter_FixedUpdate_Patch, ValheimPlus");
-			if (Smelter_FixedUpdate_Patch != null)
+			Type Smelter_UpdateSmelter_Patch = Type.GetType("ValheimPlus.GameClasses.Smelter_UpdateSmelter_Patch, ValheimPlus");
+			if (Smelter_UpdateSmelter_Patch != null)
 			{
-				ServersidePlugin.logger.LogInfo("Patching ValheimPlus.GameClasses.Smelter_FixedUpdate_Patch.Postfix");
+				ServersidePlugin.logger.LogInfo("Patching ValheimPlus.GameClasses.Smelter_UpdateSmelter_Patch.Prefix");
 				ServersidePlugin.harmony.Patch(
-					AccessTools.Method(Smelter_FixedUpdate_Patch, "Postfix"),
+					AccessTools.Method(Smelter_UpdateSmelter_Patch, "Prefix"),
 					transpiler: new HarmonyMethod(typeof(Compat_ValheimPlus), nameof(Compat_ValheimPlus.Transpile_Smelter_FixedUpdate_Patch))
 				);
 			}
 			else
 			{
-				ServersidePlugin.logger.LogError("Couldn't find ValheimPlus.GameClasses.Smelter_FixedUpdate_Patch");
+				ServersidePlugin.logger.LogError("Couldn't find ValheimPlus.GameClasses.Smelter_UpdateSmelter_Patch");
 			}
 		}
 
