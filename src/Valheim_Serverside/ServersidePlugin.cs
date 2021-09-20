@@ -24,11 +24,17 @@ namespace Valheim_Serverside
 
 			Configuration.Load(Config);
 
-			if (!ModIsEnabled() || !IsDedicated())
+			if (!ModIsEnabled())
 			{
-				Logger.LogInfo("Serverside Simulations is disabled");
+				Logger.LogInfo("Serverside Simulations is disabled. (configuration)");
 				return;
 			}
+			else if (!IsDedicated())
+			{
+				Logger.LogInfo("Serverside Simulations is disabled. (not a dedicated server)");
+				return;
+			}
+			Logger.LogInfo("Installing Serverside Simulations");
 
 			AvailableFeatures availableFeatures = new AvailableFeatures();
 			availableFeatures.AddFeature(new Features.Core());
