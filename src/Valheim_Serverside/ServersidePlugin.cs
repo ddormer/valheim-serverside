@@ -10,9 +10,9 @@ namespace Valheim_Serverside
 {
 
 	[Harmony]
-	[BepInPlugin("MVP.Valheim_Serverside_Simulations", "Serverside Simulations", "1.1.0")]
-	[BepInDependency(ValheimPlusPluginId, BepInDependency.DependencyFlags.SoftDependency)]
-
+	[BepInPlugin("MVP.Valheim_Serverside_Simulations", "Serverside Simulations", "1.1.2")]
+  [BepInDependency(ValheimPlusPluginId, BepInDependency.DependencyFlags.SoftDependency)]
+  
 	public class ServersidePlugin : BaseUnityPlugin
 	{
 
@@ -33,11 +33,17 @@ namespace Valheim_Serverside
 
 			Configuration.Load(Config);
 
-			if (!ModIsEnabled() || !IsDedicated())
+			if (!ModIsEnabled())
 			{
-				Logger.LogInfo("Serverside Simulations is disabled");
+				Logger.LogInfo("Serverside Simulations is disabled. (configuration)");
 				return;
 			}
+			else if (!IsDedicated())
+			{
+				Logger.LogInfo("Serverside Simulations is disabled. (not a dedicated server)");
+				return;
+			}
+			Logger.LogInfo("Installing Serverside Simulations");
 
 			harmony = new Harmony("MVP.Valheim_Serverside_Simulations");
 
