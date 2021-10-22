@@ -74,6 +74,10 @@ namespace PatchingLib
 					ZLog.Log("Patching: " + type.ToString());
 					new PatchClassProcessor(harmony_instance, type).Patch();
 				}
+				else
+				{
+					ZLog.Log("Patch disabled: " + type.ToString());
+				}
 			}
 		}
 	}
