@@ -1,10 +1,13 @@
 ﻿using FeaturesLib;
 using HarmonyLib;
+using MonoMod.Cil;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using OC = Mono.Cecil.Cil.OpCodes;
 using OpCode = System.Reflection.Emit.OpCode;
 using OpCodes = System.Reflection.Emit.OpCodes;
 
@@ -33,6 +36,42 @@ namespace Valheim_Serverside.Features
 			System.Diagnostics.Trace.WriteLine(string.Concat(obj));
 		}
 
+
+		[HarmonyPatch(typeof(ZSteamSocket))]
+		public static class ZSteamSocket_Patches
+		{
+			public static List<byte[]> buffer = new List<byte[]>();
+
+			[HarmonyILManipulator]
+			[HarmonyPatch(typeof(ZSteamSocket), "SendQueuedPackages")]
+			public static void Transpile_SendQueuedPackages(ILContext il)
+			{
+				var cursor = new ILCursor(il);
+				//foreach (var instr in cursor.Instrs)
+				//{
+				//    ZLog.Log($"{instr.OpCode} {instr.Operand}");
+				//}
+				cursor
+					.GotoNext(MoveType.After,
+						i => i.MatchCallvirt(AccessTools.Method(typeof(Queue<byte[]>), "Peek"))
+					)
+					// Push "this" (ZSteamSocket instance) to call stack
+					.Emit(OC.Ldarg_0)
+					// 
+					.EmitDelegate<Func<byte[], ZSteamSocket, byte[]>>(ProcessForCompression)
+				;
+			}
+
+			private static byte[] ProcessForCompression(byte[] data, ZSteamSocket arg2)
+			{
+				using (var stream = new FileStream("C:\\Users\\potato\\Downloads\\VH\\" + Guid.NewGuid().ToString() + ".dat", FileMode.Append))
+				{
+					stream.Write(data, 0, data.Length);
+				}
+				return data;
+			}
+		}
+
 		[HarmonyPatch(typeof(ZNetScene), "CreateDestroyObjects")]
 		public class CreateDestroyObjects_Patch
 		/*
@@ -51,7 +90,7 @@ namespace Valheim_Serverside.Features
 
 			CreateObjects: Makes no distinction between objects and nearby-objects except in the order
 						   they are created.
-		
+
 			RemoveObjects: Marks all ZDOs for deletion by setting the current frame number on the ZDO,
 						   and then checks if any of the ZDOs marked for deletion have an older/different
 						   frame number.
