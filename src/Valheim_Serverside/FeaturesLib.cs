@@ -36,16 +36,16 @@ namespace FeaturesLib
 		}
 
 		public Type[] GetAllNestedTypes(Type type)
+		/* Only finds publicly accessable types.
+		 */
 		{
 			List<Type> rtypes = new List<Type>();
-
 			if (type != null)
 			{
-				var inner_types = type.GetNestedTypes();
-				foreach (Type t in inner_types)
+				foreach (Type innerType in type.GetNestedTypes())
 				{
-					rtypes.Add(t);
-					rtypes.AddRange(GetAllNestedTypes(t));
+					rtypes.Add(innerType);
+					rtypes.AddRange(GetAllNestedTypes(innerType));
 				}
 			}
 			return rtypes.ToArray();
