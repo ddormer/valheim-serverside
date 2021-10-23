@@ -52,6 +52,7 @@ namespace Valheim_Serverside
 			availableFeatures.AddFeature(new Features.MaxObjectsPerFrame());
 			availableFeatures.AddFeature(new Features.Debugging());
 			availableFeatures.AddFeature(new Features.Compat_ValheimPlus());
+			availableFeatures.AddFeature(new Features.NetworkDump());
 
 			PatchRequirements patchRequirements = new PatchRequirements();
 			patchRequirements.AddRequirement(new PatchRequirement.DebugBuild());
