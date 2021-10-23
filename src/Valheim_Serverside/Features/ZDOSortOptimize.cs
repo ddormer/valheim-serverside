@@ -164,7 +164,7 @@ namespace Valheim_Serverside.Features
 		}
 
 		[Harmony]
-		static class Patches
+		public static class Patches
 		{
 			/* ZDOs are either newly created in ZNetView::Awake or loaded from existing data in ZDOMan::RPC_ZDOData;
 			 * we call SectorMan.UpdateZDOSector through hooks on these two paths after we know the ZDO is fully loaded.
@@ -172,7 +172,7 @@ namespace Valheim_Serverside.Features
 			 * For the RPC_ZDOData path, we hook on ZDO::Deserialize which is only called from ZDOMan::RPC_ZDOData
 			 */
 			[HarmonyPatch(typeof(ZNetView), nameof(ZNetView.Awake))]
-			private static class Patch_ZNetView_Awake
+			public static class Patch_ZNetView_Awake
 			{
 				private static void Prefix(ZNetView __instance, out bool __state)
 				{
@@ -200,7 +200,7 @@ namespace Valheim_Serverside.Features
 			}
 
 			[HarmonyPatch(typeof(ZDO))]
-			private static class ZDO_Patches
+			public static class ZDO_Patches
 			/* ZDO lifecycle patches for updating sector manager
 			 */
 			{
@@ -245,7 +245,7 @@ namespace Valheim_Serverside.Features
 
 			[HarmonyPatch(typeof(ZDOPool), nameof(ZDOPool.Release), new[] { typeof(ZDO) })]
 			[HarmonyPrefix]
-			private static void Patch_ZDOPool_Release(ZDO zdo)
+			public static void Patch_ZDOPool_Release(ZDO zdo)
 			/* ZDO lifecycle patch for updating sector manager
 			 */
 			{
@@ -253,7 +253,7 @@ namespace Valheim_Serverside.Features
 			}
 
 			[HarmonyPatch(typeof(ZDOMan))]
-			private static class ZDOMan_Patches
+			public static class ZDOMan_Patches
 			{
 				[HarmonyPatch(nameof(ZDOMan.ResetSectorArray))]
 				[HarmonyPostfix]
@@ -335,7 +335,7 @@ namespace Valheim_Serverside.Features
 			}
 
 			[HarmonyPatch(typeof(ZNetScene))]
-			private static class ZNetScene_Patches
+			public static class ZNetScene_Patches
 			{
 				[HarmonyPrefix]
 				[HarmonyPatch("CreateObjectsSorted")]
