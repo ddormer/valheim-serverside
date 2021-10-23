@@ -35,9 +35,25 @@ namespace FeaturesLib
 			return _features.Where(feature => feature.FeatureEnabled()).ToList();
 		}
 
+		public Type[] GetAllNestedTypes(Type type)
+		{
+			List<Type> rtypes = new List<Type>();
+
+			if (type != null)
+			{
+				var inner_types = type.GetNestedTypes();
+				foreach (Type t in inner_types)
+				{
+					rtypes.Add(t);
+					rtypes.AddRange(GetAllNestedTypes(t));
+				}
+			}
+			return rtypes.ToArray();
+		}
+
 		public Type[] GetAllNestedTypes()
 		{
-			return (from list in EnabledFeatures().Select(feature => feature.GetType().GetNestedTypes()) from item in list select item).ToArray();
+			return (from list in EnabledFeatures().Select(feature => GetAllNestedTypes(feature.GetType())) from item in list select item).ToArray();
 		}
 	}
 }
