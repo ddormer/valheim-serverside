@@ -22,7 +22,7 @@ jobs:
     
     - name: Download Valheim
       run: |
-        dotnet contrib/depotdownloader-2.3.6/DepotDownloader.dll -app 896660 -os windows -filelist .depot-downloader-file-list.txt -dir serverfiles
+        dotnet contrib/depotdownloader-2.4.5/DepotDownloader.dll -app 896660 -os windows -filelist .depot-downloader-file-list.txt -dir serverfiles
     
     - name: Publicize assembly
       run: |
