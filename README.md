@@ -6,12 +6,22 @@
 
 Run world and monster simulations on a **dedicated server**.
 
-Updated for patch: 0.156.2 [Currently in beta for Hearth & Home 0.202.14]
+Updated for patch: 0.203.11
 
 ### Features
 - Server simulates world and AI physics.
 - Client FPS improvements
 - Ships are simulated by the driver to improve the steering experience with high latency.
+
+### Installation
+
+ 1. Install BepInEx (optionally also installing "Better Networking" on both clients and the server is recommended)
+ 2. Copy plugin DLL into the BepInEx/plugins/ directory on your dedicated server.
+ 3. You're done! No client-side changes are needed.
+
+### Configuration
+
+- MaxObjectsPerFrame.MaxObjects can be increased to improve the loading times of areas on the server, at the expense of CPU usage.
 
 ### Caveats
 
@@ -20,16 +30,6 @@ Updated for patch: 0.156.2 [Currently in beta for Hearth & Home 0.202.14]
 - Only runs on dedicated servers.
 - This mod does not prevent cheating or any kind of client manipulation.
 - While this mod is quite light on complexity, as with most mods it's possible future Valheim patches will break the mod in unexpected ways. We recommend you back up your characters and worlds and/or consider disabling this mod anytime a new game patch is released.
-
-### Installation
-
- 1. Install BepInEx (link in the requirements above)
- 2. Copy plugin DLL into the BepInEx/plugins/ directory on your dedicated server.
- 3. You're done! No client-side changes are needed.
-
-### Configuration
-
-- MaxObjectsPerFrame.MaxObjects can be increased to improve the loading times of areas on the server, at the expense of CPU usage. A value of 500 seems to improve loading for some people but we'd love to have more feedback on it.
 
 ### Why?
 
