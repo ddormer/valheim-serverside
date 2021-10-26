@@ -15,7 +15,7 @@ Updated for patch: 0.203.11
 
 ### Installation
 
- 1. Install BepInEx (optionally also installing "Better Networking" on both clients and the server is recommended)
+ 1. Install BepInEx (optionally installing "Better Networking" on both clients and the server is recommended)
  2. Copy plugin DLL into the BepInEx/plugins/ directory on your dedicated server.
  3. You're done! No client-side changes are needed.
 
