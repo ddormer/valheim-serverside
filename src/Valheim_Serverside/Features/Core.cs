@@ -339,7 +339,7 @@ namespace Valheim_Serverside.Features
 					)
 					.RemoveInstruction()
 					.Insert(
-						// Push SpawnSystem.m_instance to stack (2nd arg to Core.GetCurrentSpawners)
+						// Arg 0 is SpawnSystem instance; push to stack (2nd arg to Core.GetCurrentSpawners)
 						new CodeInstruction(OpCodes.Ldarg_0),
 						new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Core), nameof(Core.GetCurrentSpawners)))
 					)
