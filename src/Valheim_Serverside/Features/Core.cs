@@ -161,19 +161,19 @@ namespace Valheim_Serverside.Features
 				__instance.FindSectorObjects(zone, ZoneSystem.instance.m_activeArea, 0, m_tempNearObjects, null);
 				foreach (ZDO zdo in m_tempNearObjects)
 				{
-					if (zdo.m_persistent)
+					if (zdo.Persistent)
 					{
 						bool anyPlayerInArea = false;
 						foreach (ZNetPeer peer in ZNet.instance.GetPeers())
 						{
-							if (ZNetScene.instance.InActiveArea(zdo.GetSector(), ZoneSystem.instance.GetZone(peer.GetRefPos())))
+							if (ZNetScene.InActiveArea(zdo.GetSector(), ZoneSystem.instance.GetZone(peer.GetRefPos())))
 							{
 								anyPlayerInArea = true;
 								break;
 							}
 						}
-
-						if (zdo.m_owner == uid || zdo.m_owner == ZNet.instance.GetUID())
+						long zdoOwner = zdo.GetOwner();
+						if (zdoOwner == uid || zdoOwner == ZNet.GetUID())
 						{
 							if (!anyPlayerInArea)
 							{
@@ -181,13 +181,13 @@ namespace Valheim_Serverside.Features
 							}
 						}
 						else if (
-							(zdo.m_owner == 0L
-							|| !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.m_owner }).GetValue<bool>()
+							(zdoOwner == 0L
+							|| !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.GetOwner()}).GetValue<bool>()
 							)
 							&& anyPlayerInArea
 						)
 						{
-							zdo.SetOwner(ZNet.instance.GetUID());
+							zdo.SetOwner(ZNet.GetUID());
 						}
 					}
 				}
@@ -301,7 +301,7 @@ namespace Valheim_Serverside.Features
 
 			foreach (Player player in Player.GetAllPlayers())
 			{
-				if (ZNetScene.instance.InActiveArea(spawnSystem_m_nview.GetZDO().GetSector(), player.transform.position))
+				if (ZNetScene.InActiveArea(spawnSystem_m_nview.GetZDO().GetSector(), player.transform.position))
 				{
 					if (Traverse.Create(instance).Method("IsInsideRandomEventArea", new Type[] { typeof(RandomEvent), typeof(Vector3) }, new object[] { randomEvent, player.transform.position }).GetValue<bool>())
 					{
@@ -423,13 +423,13 @@ namespace Valheim_Serverside.Features
 					if (!__instance.m_shipControlls.HaveValidUser())
 					{
 						new Traverse(__instance).Field("m_lastWaterImpactTime").SetValue(Time.time);
-						zdo.SetOwner(ZNet.instance.GetUID());
+						zdo.SetOwner(ZNet.GetUID());
 						return false;
 					}
 					ZDOID driver = new Traverse(__instance.m_shipControlls).Method("GetUser").GetValue<ZDOID>();
 					if (!driver.IsNone())
 					{
-						zdo.SetOwner(driver.userID);
+						zdo.SetOwner(driver.UserID);
 					}
 				}
 				return false;
