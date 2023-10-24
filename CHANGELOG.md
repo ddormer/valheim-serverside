@@ -1,3 +1,23 @@
+## [1.1.4] - 2023-10-24
+
+### Changed
+
+- Mistlands update
+
+
+### Misc
+
+- Fix AssemblyPublicizer output path.
+- Update BepInEx, Harmony and MonoMod libs
+
+
+## [1.1.4] - 2023-10-24
+
+### Changed
+
+- Mistlands update
+
+
 ## [1.1.3] - 2021-09-22
 
 ### Fixed
