@@ -43,9 +43,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(SolutionDir)\..\ValheimLibs\assembly_utils.dll</HintPath>
     </Reference>
-    <Reference Include="assembly_valheim, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="assembly_valheim_publicized, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)\..\ValheimLibs\assembly_valheim.dll</HintPath>
+      <HintPath>$(SolutionDir)\..\ValheimLibs\assembly_valheim_publicized.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx, Version=5.4.8.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -98,7 +98,6 @@
     <Compile Include="ServersidePlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent Condition="'$(BuildingInsideVisualStudio)' == true">set SCRIPT=$(SolutionDir)\bin\post_build.bat
