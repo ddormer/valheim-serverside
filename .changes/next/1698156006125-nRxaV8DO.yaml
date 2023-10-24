@@ -1,0 +1,6 @@
+type: change
+section: null
+issues: {}
+feature_flags: []
+description: |-
+  Update BepInEx, Harmony and MonoMod libs
