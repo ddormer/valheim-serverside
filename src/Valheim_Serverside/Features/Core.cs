@@ -365,7 +365,7 @@ namespace Valheim_Serverside.Features
 				__result = true;
 				foreach (ZNetPeer znetPeer in ZNet.instance.GetPeers())
 				{
-					if (!__instance.OutsideActiveArea(point, znetPeer.GetRefPos()))
+					if (!new Traverse(__instance).Method("OutsideActiveArea", point, znetPeer.GetRefPos()).GetValue<bool>())
 					{
 						__result = false;
 					}
