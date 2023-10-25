@@ -1,3 +1,10 @@
+## [1.1.5] - 2023-10-25
+
+### Fixed
+
+- Fix private method access errors in Release build
+
+
 ## [1.1.4] - 2023-10-24
 
 ### Changed
