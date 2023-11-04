@@ -1,3 +1,30 @@
+## [1.1.5] - 2023-10-25
+
+### Fixed
+
+- Fix private method access errors in Release build
+
+
+## [1.1.4] - 2023-10-24
+
+### Changed
+
+- Mistlands update
+
+
+### Misc
+
+- Fix AssemblyPublicizer output path.
+- Update BepInEx, Harmony and MonoMod libs
+
+
+## [1.1.4] - 2023-10-24
+
+### Changed
+
+- Mistlands update
+
+
 ## [1.1.3] - 2021-09-22
 
 ### Fixed
@@ -10,30 +37,6 @@
 ### Changed
 
 - Remove old fishing fixes (appears to have been fixed in latest Valheim patch)
-
-
-## [1.1.1] - 2021-05-14
-
-### Changed
-
-- Update to BepInEx 5.4.10
-
-
-### Fixed
-
-- Fix fishing
-
-
-## [1.1.1] - 2021-05-14
-
-### Changed
-
-- Update to BepInEx 5.4.10
-
-
-### Fixed
-
-- Fix fishing
 
 
 ## [1.1.1] - 2021-05-14

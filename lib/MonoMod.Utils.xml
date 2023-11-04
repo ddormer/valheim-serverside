@@ -1431,6 +1431,11 @@
             On demand ARM platform bit.
             </summary>
         </member>
+        <member name="F:MonoMod.Utils.Platform.Wine">
+            <summary>
+            On demand Wine bit. DON'T RELY ON THIS.
+            </summary>
+        </member>
         <member name="F:MonoMod.Utils.Platform.Unknown">
             <summary>
             Unknown OS.

@@ -9,13 +9,23 @@
 Run world and monster simulations on a [b]dedicated server[/b].
 
 
-Updated for patch: 0.156.2 [Currently in beta for Hearth &amp; Home 0.202.14]
+Updated for patch: 0.203.11
 
 [b][size=5]Features[/size][/b]
 [list]
 [*]Server simulates world and AI physics.
 [*]Client FPS improvements
 [*]Ships are simulated by the driver to improve the steering experience with high latency.
+[/list]
+[b][size=5]Installation[/size][/b]
+[list=1]
+[*]Install BepInEx (optionally installing &quot;Better Networking&quot; on both clients and the server is recommended)
+[*]Copy plugin DLL into the BepInEx/plugins/ directory on your dedicated server.
+[*]You&#39;re done! No client-side changes are needed.
+[/list]
+[b][size=5]Configuration[/size][/b]
+[list]
+[*]MaxObjectsPerFrame.MaxObjects can be increased to improve the loading times of areas on the server, at the expense of CPU usage.
 [/list]
 [b][size=5]Caveats[/size][/b]
 [list]
@@ -24,16 +34,6 @@ Updated for patch: 0.156.2 [Currently in beta for Hearth &amp; Home 0.202.14]
 [*]Only runs on dedicated servers.
 [*]This mod does not prevent cheating or any kind of client manipulation.
 [*]While this mod is quite light on complexity, as with most mods it&#39;s possible future Valheim patches will break the mod in unexpected ways. We recommend you back up your characters and worlds and/or consider disabling this mod anytime a new game patch is released.
-[/list]
-[b][size=5]Installation[/size][/b]
-[list=1]
-[*]Install BepInEx (link in the requirements above)
-[*]Copy plugin DLL into the BepInEx/plugins/ directory on your dedicated server.
-[*]You&#39;re done! No client-side changes are needed.
-[/list]
-[b][size=5]Configuration[/size][/b]
-[list]
-[*]MaxObjectsPerFrame.MaxObjects can be increased to improve the loading times of areas on the server, at the expense of CPU usage. A value of 500 seems to improve loading for some people but we&#39;d love to have more feedback on it.
 [/list]
 [b][size=5]Why?[/size][/b]
 

@@ -13,6 +13,7 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    timeout-minutes: 15
 
     steps:
     - uses: actions/checkout@v2
@@ -21,7 +22,12 @@ jobs:
     
     - name: Download Valheim
       run: |
-        dotnet contrib/depotdownloader-2.3.6/DepotDownloader.dll -app 896660 -os windows -filelist .depot-downloader-file-list.txt -dir serverfiles
+        dotnet contrib/depotdownloader-2.5.0/DepotDownloader.dll -app 896660 -os windows -filelist .depot-downloader-file-list.txt -dir serverfiles
+    
+    - name: Publicize assembly
+      run: |
+        cd serverfiles/valheim_server_Data/Managed
+        ../../../contrib/AssemblyPublicizer/AssemblyPublicizer.exe -i assembly_valheim.dll -o ./assembly_valheim_publicized.dll
         
     - name: build
       run: |

@@ -161,19 +161,19 @@ namespace Valheim_Serverside.Features
 				__instance.FindSectorObjects(zone, ZoneSystem.instance.m_activeArea, 0, m_tempNearObjects, null);
 				foreach (ZDO zdo in m_tempNearObjects)
 				{
-					if (zdo.m_persistent)
+					if (zdo.Persistent)
 					{
 						bool anyPlayerInArea = false;
 						foreach (ZNetPeer peer in ZNet.instance.GetPeers())
 						{
-							if (ZNetScene.instance.InActiveArea(zdo.GetSector(), ZoneSystem.instance.GetZone(peer.GetRefPos())))
+							if (ZNetScene.InActiveArea(zdo.GetSector(), ZoneSystem.instance.GetZone(peer.GetRefPos())))
 							{
 								anyPlayerInArea = true;
 								break;
 							}
 						}
-
-						if (zdo.m_owner == uid || zdo.m_owner == ZNet.instance.GetUID())
+						long zdoOwner = zdo.GetOwner();
+						if (zdoOwner == uid || zdoOwner == ZNet.GetUID())
 						{
 							if (!anyPlayerInArea)
 							{
@@ -181,13 +181,13 @@ namespace Valheim_Serverside.Features
 							}
 						}
 						else if (
-							(zdo.m_owner == 0L
-							|| !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.m_owner }).GetValue<bool>()
+							(zdoOwner == 0L
+							|| !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.GetOwner()}).GetValue<bool>()
 							)
 							&& anyPlayerInArea
 						)
 						{
-							zdo.SetOwner(ZNet.instance.GetUID());
+							zdo.SetOwner(ZNet.GetUID());
 						}
 					}
 				}
@@ -301,7 +301,7 @@ namespace Valheim_Serverside.Features
 
 			foreach (Player player in Player.GetAllPlayers())
 			{
-				if (ZNetScene.instance.InActiveArea(spawnSystem_m_nview.GetZDO().GetSector(), player.transform.position))
+				if (ZNetScene.InActiveArea(spawnSystem_m_nview.GetZDO().GetSector(), player.transform.position))
 				{
 					if (Traverse.Create(instance).Method("IsInsideRandomEventArea", new Type[] { typeof(RandomEvent), typeof(Vector3) }, new object[] { randomEvent, player.transform.position }).GetValue<bool>())
 					{
@@ -323,46 +323,29 @@ namespace Valheim_Serverside.Features
 		{
 			static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> _instructions)
 			{
-				FieldInfo field_m_localPlayer = AccessTools.Field(typeof(Player), nameof(Player.m_localPlayer));
-				var localPlayerCheck = new SequentialInstructions(new List<CodeInstruction>(new CodeInstruction[]
-				{
-					new CodeInstruction(OpCodes.Ldsfld, field_m_localPlayer),
-					new CodeInstruction(OpCodes.Ldnull),
-					new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(UnityEngine.Object), "op_Equality")),
-					new CodeInstruction(OpCodes.Brfalse)
-				}));
-				var loadRandEventSystemInstance = new SequentialInstructions(new List<CodeInstruction>(new CodeInstruction[]
-				{
-					new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SpawnSystem), "UpdateSpawnList")),
-					new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(RandEventSystem), "get_instance"))
-				}));
-				var getCurrentSpawners = new SequentialInstructions(new List<CodeInstruction>(new CodeInstruction[]
-				{
-					new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(RandEventSystem), nameof(RandEventSystem.GetCurrentSpawners))),
-				}));
+				return new CodeMatcher(_instructions)
+					// Reverse Player.m_localPlayer == false check to allow function to run on dedicated server
+					.MatchForward(true,
+						new CodeMatch(OpCodes.Ldsfld, AccessTools.Field(typeof(Player), nameof(Player.m_localPlayer))),
+						new CodeMatch(OpCodes.Ldnull),
+						new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(UnityEngine.Object), "op_Equality")),
+						new CodeMatch(OpCodes.Brfalse)
+					)
+					.SetOpcodeAndAdvance(OpCodes.Brtrue)
 
-				foreach (CodeInstruction instruction in _instructions)
-				{
-					// Add SpawnSystem instance to stack after RandEventSystem instance.
-					if (loadRandEventSystemInstance.Check(instruction))
-					{
-						yield return instruction;
-						yield return new CodeInstruction(OpCodes.Ldarg_0);
-						continue;
-					}
-					// replace GetCurrentSpawners with call to our method.
-					if (getCurrentSpawners.Check(instruction))
-					{
-						yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Core), "GetCurrentSpawners"));
-						continue;
-					}
-					if (localPlayerCheck.Check(instruction))
-					{
-						yield return new CodeInstruction(OpCodes.Brtrue, instruction.operand);
-						continue;
-					}
-					yield return instruction;
-				}
+					// Replace RandEventSystem.GetCurrentSpawners call with call to our method.
+					.MatchForward(false,
+						new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(RandEventSystem), nameof(RandEventSystem.GetCurrentSpawners)))
+					)
+					.RemoveInstruction()
+					.Insert(
+						// Arg 0 is SpawnSystem instance; push to stack (2nd arg to Core.GetCurrentSpawners)
+						new CodeInstruction(OpCodes.Ldarg_0),
+						new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Core), nameof(Core.GetCurrentSpawners)))
+					)
+
+					.InstructionEnumeration()
+				;
 			}
 		}
 
@@ -440,13 +423,13 @@ namespace Valheim_Serverside.Features
 					if (!__instance.m_shipControlls.HaveValidUser())
 					{
 						new Traverse(__instance).Field("m_lastWaterImpactTime").SetValue(Time.time);
-						zdo.SetOwner(ZNet.instance.GetUID());
+						zdo.SetOwner(ZNet.GetUID());
 						return false;
 					}
 					ZDOID driver = new Traverse(__instance.m_shipControlls).Method("GetUser").GetValue<ZDOID>();
 					if (!driver.IsNone())
 					{
-						zdo.SetOwner(driver.userID);
+						zdo.SetOwner(driver.UserID);
 					}
 				}
 				return false;
