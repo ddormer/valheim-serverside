@@ -22,7 +22,7 @@ namespace Valheim_Serverside.Features
 
 			public static void UpdateZDOSector(ZDO zdo)
 			{
-				Vector2i sectorVec = zdo.m_sector;
+				Vector2i sectorVec = zdo.GetSector();
 				Vector2i lastKnownSector;
 				if (!lastKnownZdoSector.TryGetValue(zdo, out lastKnownSector))
 				{
@@ -37,12 +37,12 @@ namespace Valheim_Serverside.Features
 
 			public static void ZDOReleased(ZDO zdo)
 			{
-				RemoveFromSector(zdo, zdo.m_sector);
+				RemoveFromSector(zdo, zdo.GetSector());
 			}
 
 			public static void AddToSector(ZDO zdo, Vector2i sectorVec)
 			{
-				int sectorIndex = zdo.m_zdoMan.SectorToIndex(sectorVec);
+				int sectorIndex = ZDOMan.instance.SectorToIndex(sectorVec);
 				if (lastKnownZdoSector.ContainsKey(zdo))
 				{
 					ZLog.LogError("Adding ZDO without removing from old sector!!!");
@@ -57,7 +57,7 @@ namespace Valheim_Serverside.Features
 
 			public static void RemoveFromSector(ZDO zdo, Vector2i sectorVec)
 			{
-				int sectorIndex = zdo.m_zdoMan.SectorToIndex(sectorVec);
+				int sectorIndex = ZDOMan.instance.SectorToIndex(sectorVec);
 				if (sectorIndex >= 0)
 				{
 					Sector sector = GetSector(sectorIndex);
@@ -118,7 +118,7 @@ namespace Valheim_Serverside.Features
 
 				public List<ZDO> GetTypeList(ZDO zdo)
 				{
-					return GetTypeList(zdo.m_type);
+					return GetTypeList(zdo.Type);
 				}
 
 				public List<ZDO> GetTypeList(ObjectType objectType)
@@ -141,7 +141,7 @@ namespace Valheim_Serverside.Features
 				public void AddZDO(ZDO zdo)
 				{
 					GetTypeList(zdo).Add(zdo);
-					if (zdo.m_distant)
+					if (zdo.Distant)
 					{
 						distantObjects.Add(zdo);
 					}
@@ -150,7 +150,7 @@ namespace Valheim_Serverside.Features
 				public void RemoveZDO(ZDO zdo)
 				{
 					GetTypeList(zdo).Remove(zdo);
-					if (zdo.m_distant)
+					if (zdo.Distant)
 					{
 						distantObjects.Remove(zdo);
 					}
@@ -349,7 +349,7 @@ namespace Valheim_Serverside.Features
 					int frameCount = Time.frameCount;
 					foreach (ZDO zdo in currentNearObjects)
 					{
-						if (zdo.m_tempCreateEarmark != frameCount && (zdo.m_distant || ZoneSystem.instance.IsZoneLoaded(zdo.GetSector())))
+						if (zdo.TempCreateEarmark != frameCount && (zdo.Distant|| ZoneSystem.instance.IsZoneLoaded(zdo.GetSector())))
 						{
 							___m_tempCurrentObjects2.Add(zdo);
 						}
@@ -366,7 +366,7 @@ namespace Valheim_Serverside.Features
 						}
 						else if (ZNet.instance.IsServer())
 						{
-							zdo2.SetOwner(ZDOMan.instance.GetMyID());
+							zdo2.SetOwner(ZNet.GetUID());
 							ZLog.Log("Destroyed invalid predab ZDO:" + zdo2.m_uid);
 							ZDOMan.instance.DestroyZDO(zdo2);
 						}
