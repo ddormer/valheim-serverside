@@ -392,7 +392,7 @@ namespace Valheim_Serverside.Features
 					ZDO zdo = ZDOMan.instance.GetZDO(rpcData.m_targetZDO);
 					if (zdo != null && granted)
 					{
-						ServersidePlugin.logger.LogInfo($"Setting owner to {rpcData.m_targetPeerID}");
+						ServersidePlugin.logger.LogDebug($"RequestRespons: Setting ship's owner to {rpcData.m_targetPeerID}");
 						zdo.SetOwner(rpcData.m_targetPeerID);
 					}
 				}
@@ -419,7 +419,7 @@ namespace Valheim_Serverside.Features
 			static bool Prefix(ref Ship __instance)
 			{
 				ZDO zdo = __instance.m_nview.GetZDO();
-				// Don't do anything if player is using ship container
+				// Don't do anything if a player is using ship's container
 				if (zdo.GetInt("InUse", 0) == 0)
 				{
 					if (!__instance.m_shipControlls.HaveValidUser())
@@ -429,10 +429,11 @@ namespace Valheim_Serverside.Features
 						return false;
 					}
 					long driver = __instance.m_shipControlls.GetUser();
-					ServersidePlugin.logger.LogInfo($"Found driver {driver}");
 					if (driver != 0L)
 					{
-						zdo.SetOwner(Player.GetPlayer(driver).GetOwner());
+						long driverID = Player.GetPlayer(driver).GetOwner();
+						ServersidePlugin.logger.LogDebug($"UpdateOwner: Setting ship's owner to {driverID}");
+						zdo.SetOwner(driverID);
 					}
 				}
 				return false;
