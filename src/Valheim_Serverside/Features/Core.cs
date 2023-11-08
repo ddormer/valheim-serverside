@@ -392,6 +392,7 @@ namespace Valheim_Serverside.Features
 					ZDO zdo = ZDOMan.instance.GetZDO(rpcData.m_targetZDO);
 					if (zdo != null && granted)
 					{
+						ServersidePlugin.logger.LogInfo($"Setting owner to {rpcData.m_targetPeerID}");
 						zdo.SetOwner(rpcData.m_targetPeerID);
 					}
 				}
@@ -415,21 +416,23 @@ namespace Valheim_Serverside.Features
 			levels when taking ownership.
 		*/
 		{
-			static bool Prefix(ref Ship __instance, ref ZNetView ___m_nview)
+			static bool Prefix(ref Ship __instance)
 			{
-				ZDO zdo = ___m_nview.GetZDO();
+				ZDO zdo = __instance.m_nview.GetZDO();
+				// Don't do anything if player is using ship container
 				if (zdo.GetInt("InUse", 0) == 0)
 				{
 					if (!__instance.m_shipControlls.HaveValidUser())
 					{
-						new Traverse(__instance).Field("m_lastWaterImpactTime").SetValue(Time.time);
+						__instance.m_lastWaterImpactTime = Time.time;
 						zdo.SetOwner(ZNet.GetUID());
 						return false;
 					}
-					ZDOID driver = new Traverse(__instance.m_shipControlls).Method("GetUser").GetValue<ZDOID>();
-					if (!driver.IsNone())
+					long driver = __instance.m_shipControlls.GetUser();
+					ServersidePlugin.logger.LogInfo($"Found driver {driver}");
+					if (driver != 0L)
 					{
-						zdo.SetOwner(driver.UserID);
+						zdo.SetOwner(Player.GetPlayer(driver).GetOwner());
 					}
 				}
 				return false;
