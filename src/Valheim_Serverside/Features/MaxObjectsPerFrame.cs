@@ -36,7 +36,7 @@ namespace Valheim_Serverside.Features
 						i => i.MatchLdarg(0),
 						i => i.MatchLdarg(1),
 						i => i.MatchLdloc(0),
-						i => i.MatchLdloca(2),
+						i => i.MatchLdloca(1),
 						i => i.MatchCall<ZNetScene>("CreateObjectsSorted")
 					)
 					.Emit(OC.Call, AccessTools.Method(
