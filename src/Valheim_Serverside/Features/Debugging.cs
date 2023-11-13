@@ -21,8 +21,8 @@ namespace Valheim_Serverside.Features
 		[HarmonyPatch(typeof(Chat), "RPC_ChatMessage")]
 		public static class Chat_RPC_ChatMessage_Patch
 		{
-			private static HashSet<Vector2i> m_tempNearSectors = new HashSet<Vector2i>();
-			private static HashSet<Vector2i> m_tempDistantSectors = new HashSet<Vector2i>();
+			private static SortedSet<Vector2i> m_tempNearSectors = new SortedSet<Vector2i>();
+			private static SortedSet<Vector2i> m_tempDistantSectors = new SortedSet<Vector2i>();
 			private static List<ZDO> m_tempCurrentObjects = new List<ZDO>();
 			private static List<ZDO> m_tempCurrentDistantObjects = new List<ZDO>();
 

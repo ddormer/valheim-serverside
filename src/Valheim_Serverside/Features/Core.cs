@@ -57,8 +57,8 @@ namespace Valheim_Serverside.Features
 						   frame number.
 		*/
 		{
-			private static HashSet<Vector2i> m_tempNearSectors = new HashSet<Vector2i>();
-			private static HashSet<Vector2i> m_tempDistantSectors = new HashSet<Vector2i>();
+			private static readonly SortedSet<Vector2i> m_tempNearSectors = new SortedSet<Vector2i>();
+			private static readonly SortedSet<Vector2i> m_tempDistantSectors = new SortedSet<Vector2i>();
 
 			private static bool Prefix(ZNetScene __instance, ref List<ZDO> ___m_tempCurrentObjects, ref List<ZDO> ___m_tempCurrentDistantObjects)
 			{

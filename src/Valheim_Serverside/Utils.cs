@@ -14,7 +14,7 @@ namespace Valheim_Serverside
 			return false;
 		}
 
-		public static void FindActiveSectors(Vector2i sector, int area, int distantArea, HashSet<Vector2i> nearbySectors, HashSet<Vector2i> distantSectors = null)
+		public static void FindActiveSectors(Vector2i sector, int area, int distantArea, SortedSet<Vector2i> nearbySectors, SortedSet<Vector2i> distantSectors = null)
 		/*
 			Same logic as as ZDOMan.FindSectorObjects; output sectors instead of objects.
 		*/
@@ -34,7 +34,7 @@ namespace Valheim_Serverside
 				}
 			}
 
-			HashSet<Vector2i> sectors = (distantSectors != null) ? distantSectors : nearbySectors;
+			SortedSet<Vector2i> sectors = (distantSectors != null) ? distantSectors : nearbySectors;
 			for (int l = area + 1; l <= area + distantArea; l++)
 			{
 				for (int m = sector.x - l; m <= sector.x + l; m++)
@@ -50,7 +50,7 @@ namespace Valheim_Serverside
 			}
 		}
 
-		public static void FindAllActiveSectors(int area, int distantArea, HashSet<Vector2i> nearbySectors, HashSet<Vector2i> distantSectors = null)
+		public static void FindAllActiveSectors(int area, int distantArea, SortedSet<Vector2i> nearbySectors, SortedSet<Vector2i> distantSectors = null)
 		{
 			foreach (ZNetPeer peer in ZNet.instance.GetPeers())
 			{
@@ -65,7 +65,7 @@ namespace Valheim_Serverside
 			}
 		}
 
-		public static void FindObjectsInSectors(HashSet<Vector2i> sectors, List<ZDO> objects)
+		public static void FindObjectsInSectors(SortedSet<Vector2i> sectors, List<ZDO> objects)
 		{
 			foreach (Vector2i sector in sectors)
 			{
@@ -73,7 +73,7 @@ namespace Valheim_Serverside
 			}
 		}
 
-		public static void FindDistantObjectsInSectors(HashSet<Vector2i> sectors, List<ZDO> objects)
+		public static void FindDistantObjectsInSectors(SortedSet<Vector2i> sectors, List<ZDO> objects)
 		{
 			foreach (Vector2i sector in sectors)
 			{
