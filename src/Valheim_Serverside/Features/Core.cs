@@ -129,15 +129,15 @@ namespace Valheim_Serverside.Features
 				{
 					___m_updateTimer = 0f;
 					// original flag line removed, as well as the check for it as it always returns `false` on the server.
-					//bool flag = Traverse.Create(__instance).Method("CreateLocalZones", ZNet.instance.GetReferencePosition()).GetValue<bool>();
-					Traverse.Create(__instance).Method("UpdateTTL", 0.1f).GetValue();
+					//bool flag = __instance.CreateLocalZones(ZNet.instance.GetReferencePosition());
+					__instance.UpdateTTL(0.1f);
 					if (ZNet.instance.IsServer()) // && !flag)
 					{
-						//Traverse.Create(__instance).Method("CreateGhostZones", ZNet.instance.GetReferencePosition()).GetValue();
+						//__instance.CreateGhostZones(ZNet.instance.GetReferencePosition());
 						//UnityEngine.Debug.Log(String.Concat(new object[] { "CreateLocalZones for", refPoint.x, " ", refPoint.y, " ", refPoint.z }));
 						foreach (ZNetPeer znetPeer in ZNet.instance.GetPeers())
 						{
-							Traverse.Create(__instance).Method("CreateLocalZones", znetPeer.GetRefPos()).GetValue();
+							__instance.CreateLocalZones(znetPeer.GetRefPos());
 						}
 					}
 				}
@@ -155,14 +155,13 @@ namespace Valheim_Serverside.Features
 			If ZDO is no longer near the peer, release ownership. If no owner set, change ownership to said peer.
 		*/
 		{
-			static bool Prefix(ZDOMan __instance, ref Vector3 refPosition, ref long uid)
+			static bool Prefix(ZDOMan __instance, ref Vector3 refPosition, ref long uid, List<ZDO> ___m_tempNearObjects)
 			{
 				Vector2i zone = ZoneSystem.instance.GetZone(refPosition);
-				List<ZDO> m_tempNearObjects = Traverse.Create(__instance).Field("m_tempNearObjects").GetValue<List<ZDO>>();
-				m_tempNearObjects.Clear();
+				___m_tempNearObjects.Clear();
 
-				__instance.FindSectorObjects(zone, ZoneSystem.instance.m_activeArea, 0, m_tempNearObjects, null);
-				foreach (ZDO zdo in m_tempNearObjects)
+				__instance.FindSectorObjects(zone, ZoneSystem.instance.m_activeArea, 0, ___m_tempNearObjects, null);
+				foreach (ZDO zdo in ___m_tempNearObjects)
 				{
 					if (zdo.Persistent)
 					{
@@ -185,7 +184,7 @@ namespace Valheim_Serverside.Features
 						}
 						else if (
 							(zdoOwner == 0L
-							|| !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.GetOwner()}).GetValue<bool>()
+							|| __instance.IsInPeerActiveArea(zdo.GetSector(), zdo.GetOwner())
 							)
 							&& anyPlayerInArea
 						)
@@ -294,19 +293,19 @@ namespace Valheim_Serverside.Features
 			Return spawners if there are nearby players in the event area.
 		*/
 		{
-			if (Traverse.Create(instance).Field("m_activeEvent").GetValue<RandomEvent>() == null)
+			if (instance.m_activeEvent == null)
 			{
 				return null;
 			}
 
-			ZNetView spawnSystem_m_nview = Traverse.Create(spawnSystem).Field("m_nview").GetValue<ZNetView>();
-			RandomEvent randomEvent = Traverse.Create(instance).Field("m_randomEvent").GetValue<RandomEvent>();
+			ZNetView spawnSystem_m_nview = spawnSystem.m_nview;
+			RandomEvent randomEvent = instance.m_randomEvent;
 
 			foreach (Player player in Player.GetAllPlayers())
 			{
 				if (ZNetScene.InActiveArea(spawnSystem_m_nview.GetZDO().GetSector(), player.transform.position))
 				{
-					if (Traverse.Create(instance).Method("IsInsideRandomEventArea", new Type[] { typeof(RandomEvent), typeof(Vector3) }, new object[] { randomEvent, player.transform.position }).GetValue<bool>())
+					if (instance.IsInsideRandomEventArea(randomEvent, player.transform.position))
 					{
 						return instance.GetCurrentSpawners();
 					}
