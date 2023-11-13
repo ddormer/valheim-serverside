@@ -34,7 +34,7 @@ namespace Valheim_Serverside.Features
 		}
 
 		[HarmonyPatch(typeof(ZNetScene), "CreateDestroyObjects")]
-		private class CreateDestroyObjects_Patch
+		public class CreateDestroyObjects_Patch
 		/*
 			The bread and butter of the mod, this patch facilitates spawning objects on the server.
 
