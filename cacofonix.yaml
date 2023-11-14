@@ -31,5 +31,5 @@ fragment_types:
     title: Removed
   misc:
     title: Misc
-    showcontent: False
+    #showcontent: False
 

@@ -9,20 +9,31 @@
 Run world and monster simulations on a [b]dedicated server[/b].
 
 
-Updated for patch: 0.148.7
+Updated for patch: 0.203.11
 
-[b][size=5]Caveats[/size][/b]
+[b][size=5]Features[/size][/b]
 [list]
-[*]This mod dramatically increases server resource usage and may lead to a poor gameplay experience.
-[*]While this mod is quite light on complexity, as with most mods it&#39;s possible future Valheim patches will break the mod in unexpected ways. We recommend you back up your characters and worlds and/or consider disabling this mod anytime a new game patch is released.
-[*]Only runs on dedicated servers.
-[*]This mod does not prevent cheating or any kind of client manipulation.
+[*]Server simulates world and AI physics.
+[*]Client FPS improvements
+[*]Ships are simulated by the driver to improve the steering experience with high latency.
 [/list]
 [b][size=5]Installation[/size][/b]
 [list=1]
-[*]Install BepInEx (link in the requirements above)
+[*]Install BepInEx (optionally installing &quot;Better Networking&quot; on both clients and the server is recommended)
 [*]Copy plugin DLL into the BepInEx/plugins/ directory on your dedicated server.
 [*]You&#39;re done! No client-side changes are needed.
+[/list]
+[b][size=5]Configuration[/size][/b]
+[list]
+[*]MaxObjectsPerFrame.MaxObjects can be increased to improve the loading times of areas on the server, at the expense of CPU usage.
+[/list]
+[b][size=5]Caveats[/size][/b]
+[list]
+[*]The mod dramatically increases server resource usage and may lead to a poor gameplay experience.
+[*]The mod should be disabled when using the &quot;optterrain&quot; command.
+[*]Only runs on dedicated servers.
+[*]This mod does not prevent cheating or any kind of client manipulation.
+[*]While this mod is quite light on complexity, as with most mods it&#39;s possible future Valheim patches will break the mod in unexpected ways. We recommend you back up your characters and worlds and/or consider disabling this mod anytime a new game patch is released.
 [/list]
 [b][size=5]Why?[/size][/b]
 
@@ -32,10 +43,6 @@ Ordinarily, to keep server resource usage low, the Valheim server will hand off 
 
 This dedicated server mod causes terrain, monsters and other objects that are normally created and owned by clients to instead be created on—and thus owned and simulated by—the server.
 
-[b][size=5]Known issues[/size][/b]
-[list]
-[*]When a player goes through a portal, other players nearby may momentarily see the player appear on their location. This does not effect the mechanics of teleportation and appears to only be a visual glitch.
-[/list]
 [b][size=4]For mod developers - compatibility with Serverside Simulations[/size][/b]
 
 For mod developers interested in maintaining compatibility with Serverside Simulations:

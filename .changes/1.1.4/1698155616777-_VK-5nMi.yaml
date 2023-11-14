@@ -1,0 +1,6 @@
+type: misc
+section: null
+issues: {}
+feature_flags: []
+description: |-
+  Fix AssemblyPublicizer output path.

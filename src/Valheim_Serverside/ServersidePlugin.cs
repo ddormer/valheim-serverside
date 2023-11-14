@@ -1,49 +1,69 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using BepInEx;
+﻿using BepInEx;
+using BepInEx.Logging;
+using FeaturesLib;
 using HarmonyLib;
-using System.Reflection;
-using UnityEngine;
-
-using MonoMod.Cil;
-
-using OpCodes = System.Reflection.Emit.OpCodes;
-using OpCode = System.Reflection.Emit.OpCode;
-using OC = Mono.Cecil.Cil.OpCodes;
+using PatchingLib;
+using PluginConfiguration;
+using Requirements;
 
 namespace Valheim_Serverside
 {
-	[BepInPlugin("MVP.Valheim_Serverside_Simulations", "Serverside Simulations", "1.0.1")]
+
+	[Harmony]
+	[BepInPlugin("MVP.Valheim_Serverside_Simulations", "Serverside Simulations", "1.1.5")]
+	[BepInDependency(ValheimPlusPluginId, BepInDependency.DependencyFlags.SoftDependency)]
+
 	public class ServersidePlugin : BaseUnityPlugin
 	{
+
 		private static ServersidePlugin context;
 
-		private Configuration configuration;
+		public static Configuration configuration;
+
+		public static Harmony harmony;
+
+		public const string ValheimPlusPluginId = "org.bepinex.plugins.valheim_plus";
+
+		public static ManualLogSource logger;
 
 		private void Awake()
 		{
 			context = this;
-			configuration = new Configuration(Config);
+			logger = Logger;
 
-			if (!ModIsEnabled() || !IsDedicated())
+			Configuration.Load(Config);
+
+			if (!ModIsEnabled())
 			{
-				Logger.LogInfo("Serverside Simulations is disabled");
+				Logger.LogInfo("Serverside Simulations is disabled. (configuration)");
 				return;
 			}
+			else if (!IsDedicated())
+			{
+				Logger.LogInfo("Serverside Simulations is disabled. (not a dedicated server)");
+				return;
+			}
+			Logger.LogInfo("Installing Serverside Simulations");
 
-			Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), null);
+			harmony = new Harmony("MVP.Valheim_Serverside_Simulations");
+
+			AvailableFeatures availableFeatures = new AvailableFeatures();
+			availableFeatures.AddFeature(new Features.Core());
+			availableFeatures.AddFeature(new Features.MaxObjectsPerFrame());
+			availableFeatures.AddFeature(new Features.Debugging());
+			availableFeatures.AddFeature(new Features.Compat_ValheimPlus());
+
+			PatchRequirements patchRequirements = new PatchRequirements();
+			patchRequirements.AddRequirement(new PatchRequirement.DebugBuild());
+
+			new HarmonyFeaturesPatcher(patchRequirements).PatchAll(availableFeatures.GetAllNestedTypes(), harmony);
+
 			Logger.LogInfo("Serverside Simulations installed");
 		}
 
-		private bool ModIsEnabled()
+		public bool ModIsEnabled()
 		{
-			return configuration.modEnabled.Value;
-		}
-
-		public static bool IsServer()
-		{
-			return ZNet.instance && ZNet.instance.IsServer();
+			return Configuration.modEnabled.Value;
 		}
 
 		public static bool IsDedicated()
@@ -507,4 +527,5 @@ namespace Valheim_Serverside
 			}
 		}
 	}
+
 }

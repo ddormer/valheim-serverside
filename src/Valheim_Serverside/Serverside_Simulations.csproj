@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Valheim_Serverside</RootNamespace>
     <AssemblyName>Serverside_Simulations</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
@@ -42,9 +44,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(SolutionDir)\..\ValheimLibs\assembly_utils.dll</HintPath>
     </Reference>
-    <Reference Include="assembly_valheim, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="assembly_valheim_publicized, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)\..\ValheimLibs\assembly_valheim.dll</HintPath>
+      <HintPath>$(SolutionDir)\..\ValheimLibs\assembly_valheim_publicized.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx, Version=5.4.8.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -84,6 +86,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Features\Compat_ValheimPlus.cs" />
+    <Compile Include="Features\Core.cs" />
+    <Compile Include="Utils.cs" />
+    <Compile Include="Patching.cs" />
+    <Compile Include="Features\MaxObjectsPerFrame.cs" />
+    <Compile Include="Requirements.cs" />
+    <Compile Include="FeaturesLib.cs" />
+    <Compile Include="Features\Debugging.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="SequentialInstructions.cs" />
     <Compile Include="ServersidePlugin.cs" />

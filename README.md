@@ -6,20 +6,30 @@
 
 Run world and monster simulations on a **dedicated server**.
 
-Updated for patch: 0.148.7
+Updated for patch: 0.203.11
 
-### Caveats
-
-- This mod dramatically increases server resource usage and may lead to a poor gameplay experience.
-- While this mod is quite light on complexity, as with most mods it's possible future Valheim patches will break the mod in unexpected ways. We recommend you back up your characters and worlds and/or consider disabling this mod anytime a new game patch is released.
-- Only runs on dedicated servers.
-- This mod does not prevent cheating or any kind of client manipulation.
+### Features
+- Server simulates world and AI physics.
+- Client FPS improvements
+- Ships are simulated by the driver to improve the steering experience with high latency.
 
 ### Installation
 
- 1. Install BepInEx (link in the requirements above)
+ 1. Install BepInEx (optionally installing "Better Networking" on both clients and the server is recommended)
  2. Copy plugin DLL into the BepInEx/plugins/ directory on your dedicated server.
  3. You're done! No client-side changes are needed.
+
+### Configuration
+
+- MaxObjectsPerFrame.MaxObjects can be increased to improve the loading times of areas on the server, at the expense of CPU usage.
+
+### Caveats
+
+- The mod dramatically increases server resource usage and may lead to a poor gameplay experience.
+- The mod should be disabled when using the "optterrain" command. 
+- Only runs on dedicated servers.
+- This mod does not prevent cheating or any kind of client manipulation.
+- While this mod is quite light on complexity, as with most mods it's possible future Valheim patches will break the mod in unexpected ways. We recommend you back up your characters and worlds and/or consider disabling this mod anytime a new game patch is released.
 
 ### Why?
 
@@ -28,10 +38,6 @@ Ordinarily, to keep server resource usage low, the Valheim server will hand off 
 ### How?
 
 This dedicated server mod causes terrain, monsters and other objects that are normally created and owned by clients to instead be created on—and thus owned and simulated by—the server.
-
-### Known issues
-
-- When a player goes through a portal, other players nearby may momentarily see the player appear on their location. This does not effect the mechanics of teleportation and appears to only be a visual glitch.
 
 #### For mod developers - compatibility with Serverside Simulations
 

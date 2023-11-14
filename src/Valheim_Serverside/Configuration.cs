@@ -1,20 +1,20 @@
 ﻿using BepInEx.Configuration;
-using BepInEx;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Valheim_Serverside
+namespace PluginConfiguration
 {
-	class Configuration
+	public class Configuration
 	{
-		public ConfigEntry<bool> modEnabled;
-		public Configuration(ConfigFile config)
+		public static ConfigEntry<bool> modEnabled;
+
+		public static ConfigEntry<bool> maxObjectsPerFrameEnabled;
+		public static ConfigEntry<int> maxObjectsPerFrame;
+
+		public static void Load(ConfigFile config)
 		{
 			modEnabled = config.Bind<bool>("General", "Enabled", true, "Enable or disable the mod");
+
+			maxObjectsPerFrameEnabled = config.Bind<bool>("MaxObjectsPerFrame", "Enabled", true, "Enable or disable the feature");
+			maxObjectsPerFrame = config.Bind<int>("MaxObjectsPerFrame", "MaxObjects", 100, "Maximum number of objects the server can create per frame.");
 		}
 	}
 }
