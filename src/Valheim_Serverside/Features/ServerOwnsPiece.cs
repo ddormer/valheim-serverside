@@ -27,15 +27,16 @@ namespace Valheim_Serverside.Features
 					GameObject prefab = ZNetScene.instance.GetPrefab(prefabHash);
 					// Only take control of building pieces for now
 					// TODO: See if this should be expanded
-					if (prefab != null && prefab.GetComponent<Piece>() != null)
+					if (prefab != null 
+						&& prefab.GetComponent<Piece>() != null
+						// Don't take control of containers as their owner is managed by players
+						&& prefab.GetComponent<Container>() == null
+					)
 					{
 #if DEBUG
 						ServersidePlugin.logger.LogMessage($"Taking ownership of new ZDO (player id: {owner} id: {zdo.m_uid} name: {prefab.name}");
 #endif
 						zdo.SetOwner(myid);
-						// Increment owner revision to prevent owner getting desynced with high latency clients
-						zdo.OwnerRevision += 10;
-						zdo.DataRevision += 10;
 						return;
 					}
 				}
