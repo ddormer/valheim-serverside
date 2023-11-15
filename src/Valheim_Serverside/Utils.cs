@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 
 namespace Valheim_Serverside
 {
@@ -14,7 +15,7 @@ namespace Valheim_Serverside
 			return false;
 		}
 
-		public static void FindActiveSectors(Vector2i sector, int area, int distantArea, SortedSet<Vector2i> nearbySectors, SortedSet<Vector2i> distantSectors = null)
+		public static void FindActiveSectors(Vector2i sector, int area, int distantArea, List<Vector2i> nearbySectors, List<Vector2i> distantSectors = null)
 		/*
 			Same logic as as ZDOMan.FindSectorObjects; output sectors instead of objects.
 		*/
@@ -34,7 +35,7 @@ namespace Valheim_Serverside
 				}
 			}
 
-			SortedSet<Vector2i> sectors = (distantSectors != null) ? distantSectors : nearbySectors;
+			List<Vector2i> sectors = (distantSectors != null) ? distantSectors : nearbySectors;
 			for (int l = area + 1; l <= area + distantArea; l++)
 			{
 				for (int m = sector.x - l; m <= sector.x + l; m++)
@@ -50,22 +51,23 @@ namespace Valheim_Serverside
 			}
 		}
 
-		public static void FindAllActiveSectors(int area, int distantArea, SortedSet<Vector2i> nearbySectors, SortedSet<Vector2i> distantSectors = null)
+		public static void FindAllActiveSectors(int area, int distantArea, List<Vector2i> nearbySectors, List<Vector2i> distantSectors = null)
 		{
 			foreach (ZNetPeer peer in ZNet.instance.GetPeers())
 			{
 				Vector2i sector = ZoneSystem.instance.GetZone(peer.GetRefPos());
 				FindActiveSectors(sector, area, distantArea, nearbySectors, distantSectors);
 			}
+			nearbySectors = nearbySectors.Distinct().ToList();
 
 			if (distantSectors != null)
 			{
 				// Remove all nearbySectors from distantSectors (deduplication)
-				distantSectors.ExceptWith(nearbySectors);
+				distantSectors = distantSectors.Distinct().Except(nearbySectors).ToList();
 			}
 		}
 
-		public static void FindObjectsInSectors(SortedSet<Vector2i> sectors, List<ZDO> objects)
+		public static void FindObjectsInSectors(List<Vector2i> sectors, List<ZDO> objects)
 		{
 			foreach (Vector2i sector in sectors)
 			{
@@ -73,7 +75,7 @@ namespace Valheim_Serverside
 			}
 		}
 
-		public static void FindDistantObjectsInSectors(SortedSet<Vector2i> sectors, List<ZDO> objects)
+		public static void FindDistantObjectsInSectors(List<Vector2i> sectors, List<ZDO> objects)
 		{
 			foreach (Vector2i sector in sectors)
 			{
