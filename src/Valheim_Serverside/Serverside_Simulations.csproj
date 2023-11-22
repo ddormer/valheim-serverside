@@ -37,10 +37,11 @@
   </PropertyGroup>
   <Import Project="Environment.props" />
   <ItemGroup>
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.1" PrivateAssets="all" />
     <Reference Include="assembly_utils">
       <HintPath>$(VALHEIM_DEDI_INSTALL)\valheim_server_Data\Managed\assembly_utils.dll</HintPath>
     </Reference>
-    <Reference Include="assembly_valheim">
+    <Reference Include="assembly_valheim" Publicize="true">
       <HintPath>$(VALHEIM_DEDI_INSTALL)\valheim_server_Data\Managed\assembly_valheim.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
