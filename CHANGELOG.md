@@ -1,3 +1,11 @@
+## [1.1.6] - 2023-11-22
+
+### Fixed
+
+- Fix exception when updating ship owner in 0.217.28
+- Fix MaxObjectsPerFrame transpiler for Valheim 0.217.28
+
+
 ## [1.1.5] - 2023-10-25
 
 ### Fixed
