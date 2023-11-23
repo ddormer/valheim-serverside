@@ -17,6 +17,7 @@
     <ProjectReference Include="..\Valheim_Serverside\Serverside_Simulations.csproj" />
   </ItemGroup>
 
+  <Import Project="../Environment.props" Condition="Exists('../Environment.props')" />
   <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>$(VALHEIM_DEDI_INSTALL)\BepInEx\core\0Harmony.dll</HintPath>

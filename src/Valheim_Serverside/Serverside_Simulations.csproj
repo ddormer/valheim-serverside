@@ -35,7 +35,7 @@
   <PropertyGroup>
     <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
   </PropertyGroup>
-  <Import Project="./Environment.props" Condition="Exists('./Environment.props')" />
+  <Import Project="../Environment.props" Condition="Exists('../Environment.props')" />
   <ItemGroup>
     <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.1" PrivateAssets="all" />
     <Reference Include="assembly_utils">

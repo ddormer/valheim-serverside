@@ -1,4 +1,4 @@
 bin
 /.vs
 obj
-src/Valheim_Serverside/Environment.props
+src/Environment.props
