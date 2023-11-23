@@ -28,8 +28,9 @@ jobs:
         
     - name: build
       env:
-        VALHEIM_DEDI_INSTALL: serverfiles
+        VALHEIM_DEDI_INSTALL: ../../serverfiles
       run: |
+        xcopy /E /I lib\* serverfiles\
         msbuild /t:Restore,Build -p:Configuration=Release
         
     - name: upload
