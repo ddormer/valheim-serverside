@@ -6,7 +6,7 @@
 
 Run world and monster simulations on a **dedicated server**.
 
-Updated for patch: 0.203.11
+Updated for patch: 0.217.31
 
 ### Features
 - Server simulates world and AI physics.
