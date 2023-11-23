@@ -28,7 +28,7 @@ jobs:
         
     - name: build
       env:
-        VALHEIM_DEDI_SERVER: serverfiles
+        VALHEIM_DEDI_INSTALL: serverfiles
       run: |
         msbuild /t:Restore,Build -p:Configuration=Release
         
