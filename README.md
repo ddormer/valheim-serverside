@@ -46,3 +46,17 @@ For mod developers interested in maintaining compatibility with Serverside Simul
   - Player.m_localPlayer is always `null` on a dedicated server; your code should check for this.
   - On a dedicated server, `ZNet.instance.GetReferencePosition()` returns a position outside of the world and is not related to any player position.
   - Any graphical or hud-related code should probably be behind a `ZNet.instance.IsDedicated()` check, if that code is expected to run on the server.
+
+### Manually compiling
+
+To manually compile, create a file at `src/valheim/Environment.props` with the following content, and change the path to point at your Valheim install.
+
+```
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- Needs to be your path to the base Valheim folder -->
+    <VALHEIM_DEDI_INSTALL>E:\SteamLibrary\steamapps\common\Valheim dedicated server</VALHEIM_DEDI_INSTALL>
+  </PropertyGroup>
+</Project>
+```
