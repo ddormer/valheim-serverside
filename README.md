@@ -49,7 +49,7 @@ For mod developers interested in maintaining compatibility with Serverside Simul
 
 ### Manually compiling
 
-To manually compile, create a file at `src/valheim/Environment.props` with the following content, and change the path to point at your Valheim install.
+To manually compile, create a file at `src/Environment.props` with the following content, and change the path to point at your Valheim install.
 
 ```
 <?xml version="1.0" encoding="utf-8"?>
