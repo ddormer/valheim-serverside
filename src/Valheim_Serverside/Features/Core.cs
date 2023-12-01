@@ -67,7 +67,7 @@ namespace Valheim_Serverside.Features
 				___m_tempCurrentObjects.Clear();
 				___m_tempCurrentDistantObjects.Clear();
 
-				Utilities.FindAllActiveSectors(ZoneSystem.instance.m_activeArea, ZoneSystem.instance.m_activeDistantArea, m_tempNearSectors, m_tempDistantSectors);
+				Utilities.FindActiveSectors(ZoneSystem.instance.m_activeArea, ZoneSystem.instance.m_activeDistantArea, m_tempNearSectors, m_tempDistantSectors);
 				Utilities.FindObjectsInSectors(m_tempNearSectors, ___m_tempCurrentObjects);
 				Utilities.FindDistantObjectsInSectors(m_tempDistantSectors, ___m_tempCurrentDistantObjects);
 
