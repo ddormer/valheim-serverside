@@ -53,7 +53,7 @@ namespace Valheim_Serverside
 
 		public static void FindActiveSectors(int area, int distantArea, List<Vector2i> nearbySectors, List<Vector2i> distantSectors = null)
 		/*
-			Find surrounding neary and distanct sectors for all active peers and deduplicate list.
+			Find surrounding nearby and distant sectors for all active peers and deduplicate list.
 		*/
 		{
 			foreach (ZNetPeer peer in ZNet.instance.GetPeers())
