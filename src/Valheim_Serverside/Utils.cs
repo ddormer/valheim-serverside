@@ -15,9 +15,9 @@ namespace Valheim_Serverside
 			return false;
 		}
 
-		public static void FindActiveSectors(Vector2i sector, int area, int distantArea, List<Vector2i> nearbySectors, List<Vector2i> distantSectors = null)
+		public static void FindSectorsSurrounding(Vector2i sector, int area, int distantArea, List<Vector2i> nearbySectors, List<Vector2i> distantSectors = null)
 		/*
-			Same logic as as ZDOMan.FindSectorObjects; output sectors instead of objects.
+			Find nearby and distant sectors surrounding a given sector.
 		*/
 		{
 			nearbySectors.Add(sector);
@@ -51,12 +51,15 @@ namespace Valheim_Serverside
 			}
 		}
 
-		public static void FindAllActiveSectors(int area, int distantArea, List<Vector2i> nearbySectors, List<Vector2i> distantSectors = null)
+		public static void FindActiveSectors(int area, int distantArea, List<Vector2i> nearbySectors, List<Vector2i> distantSectors = null)
+		/*
+			Find surrounding neary and distanct sectors for all active peers and deduplicate list.
+		*/
 		{
 			foreach (ZNetPeer peer in ZNet.instance.GetPeers())
 			{
 				Vector2i sector = ZoneSystem.instance.GetZone(peer.GetRefPos());
-				FindActiveSectors(sector, area, distantArea, nearbySectors, distantSectors);
+				FindSectorsSurrounding(sector, area, distantArea, nearbySectors, distantSectors);
 			}
 			nearbySectors = nearbySectors.Distinct().ToList();
 
