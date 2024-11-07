@@ -63,7 +63,7 @@ namespace Valheim_Serverside.Features
 				List<ZDO> m_tempCurrentDistantObjects = new List<ZDO>();
 				foreach (ZNetPeer znetPeer in ZNet.instance.GetConnectedPeers())
 				{
-					Vector2i zone = ZoneSystem.instance.GetZone(znetPeer.GetRefPos());
+					Vector2i zone = ZoneSystem.GetZone(znetPeer.GetRefPos());
 					ZDOMan.instance.FindSectorObjects(zone, ZoneSystem.instance.m_activeArea, ZoneSystem.instance.m_activeDistantArea, m_tempCurrentObjects, m_tempCurrentDistantObjects);
 				}
 
@@ -82,7 +82,7 @@ namespace Valheim_Serverside.Features
 			{
 				foreach (ZNetPeer peer in ZNet.instance.GetPeers())
 				{
-					Vector2i zone = __instance.GetZone(peer.GetRefPos());
+					Vector2i zone = ZoneSystem.GetZone(peer.GetRefPos());
 					for (int i = zone.y - __instance.m_activeArea; i <= zone.y + __instance.m_activeArea; i++)
 					{
 						for (int j = zone.x - __instance.m_activeArea; j <= zone.x + __instance.m_activeArea; j++)
@@ -154,7 +154,7 @@ namespace Valheim_Serverside.Features
 		{
 			static bool Prefix(ZDOMan __instance, ref Vector3 refPosition, ref long uid)
 			{
-				Vector2i zone = ZoneSystem.instance.GetZone(refPosition);
+				Vector2i zone = ZoneSystem.GetZone(refPosition);
 				List<ZDO> m_tempNearObjects = Traverse.Create(__instance).Field("m_tempNearObjects").GetValue<List<ZDO>>();
 				m_tempNearObjects.Clear();
 
@@ -166,7 +166,7 @@ namespace Valheim_Serverside.Features
 						bool anyPlayerInArea = false;
 						foreach (ZNetPeer peer in ZNet.instance.GetPeers())
 						{
-							if (ZNetScene.InActiveArea(zdo.GetSector(), ZoneSystem.instance.GetZone(peer.GetRefPos())))
+							if (ZNetScene.InActiveArea(zdo.GetSector(), ZoneSystem.GetZone(peer.GetRefPos())))
 							{
 								anyPlayerInArea = true;
 								break;
@@ -365,7 +365,7 @@ namespace Valheim_Serverside.Features
 				__result = true;
 				foreach (ZNetPeer znetPeer in ZNet.instance.GetPeers())
 				{
-					if (!__instance.OutsideActiveArea(point, znetPeer.GetRefPos()))
+					if (!ZNetScene.OutsideActiveArea(point, znetPeer.GetRefPos()))
 					{
 						__result = false;
 					}
