@@ -20,8 +20,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: microsoft/setup-msbuild@v1.0.2
-    - uses: actions/download-artifact@v2
-    
+
     - name: Download Valheim
       run: |
         dotnet contrib/depotdownloader-2.5.0/DepotDownloader.dll -app 896660 -os windows -filelist .depot-downloader-file-list.txt -dir serverfiles
