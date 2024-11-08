@@ -33,7 +33,7 @@ jobs:
         msbuild /t:Restore,Build -p:Configuration=Release
         
     - name: upload
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: serverside-simulations-${{ github.sha }}
         path: bin\Release\Serverside_Simulations.dll
