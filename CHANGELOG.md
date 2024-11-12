@@ -1,3 +1,15 @@
+## [1.1.7] - 2024-11-12
+
+### Added
+
+- Environment.props and bepinex publicizer
+
+
+### Fixed
+
+- Update method references to static, fixing Bog Witch launch issue. Thanks to @bpage-dev
+
+
 ## [1.1.6] - 2023-11-22
 
 ### Fixed
