@@ -1,0 +1,6 @@
+type: bugfix
+section: null
+issues: {}
+feature_flags: []
+description: |-
+  Update method references to static, fixing Bog Witch launch issue. Thanks to @bpage-dev
