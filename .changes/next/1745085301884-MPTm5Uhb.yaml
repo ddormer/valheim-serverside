@@ -1,0 +1,6 @@
+type: bugfix
+section: null
+issues: {}
+feature_flags: []
+description: |-
+  Fix null references to `WearNTear.m_bounds` and `Humanoid.m_currentAttack.m_character`
