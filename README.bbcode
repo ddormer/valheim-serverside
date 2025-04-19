@@ -1,33 +1,38 @@
+
 [b][size=7]Valheim Serverside Simulations[/size][/b]
 
-[url=https://github.com/ddormer/valheim-serverside/actions/workflows/build-plugin.yml][img]https://github.com/ddormer/valheim-serverside/actions/workflows/build-plugin.yml/badge.svgBuild Plugin[/img][/url]
+[url=https://github.com/ddormer/valheim-serverside/actions/workflows/build-plugin.yml][img alt="Build Plugin"]https://github.com/ddormer/valheim-serverside/actions/workflows/build-plugin.yml/badge.svg[/img][/url]
 
-
-[img]https://github.com/ddormer/valheim-serverside/blob/main/ss-gh.pngfoo[/img]
-
+[img alt="foo"]https://github.com/ddormer/valheim-serverside/blob/main/ss-gh.png[/img]
 
 Run world and monster simulations on a [b]dedicated server[/b].
 
-
-Updated for patch: 0.203.11
+Updated for patch: 0.217.31
 
 [b][size=5]Features[/size][/b]
+
 [list]
 [*]Server simulates world and AI physics.
 [*]Client FPS improvements
 [*]Ships are simulated by the driver to improve the steering experience with high latency.
 [/list]
+
 [b][size=5]Installation[/size][/b]
+
 [list=1]
 [*]Install BepInEx (optionally installing &quot;Better Networking&quot; on both clients and the server is recommended)
 [*]Copy plugin DLL into the BepInEx/plugins/ directory on your dedicated server.
 [*]You&#39;re done! No client-side changes are needed.
 [/list]
+
 [b][size=5]Configuration[/size][/b]
+
 [list]
 [*]MaxObjectsPerFrame.MaxObjects can be increased to improve the loading times of areas on the server, at the expense of CPU usage.
 [/list]
+
 [b][size=5]Caveats[/size][/b]
+
 [list]
 [*]The mod dramatically increases server resource usage and may lead to a poor gameplay experience.
 [*]The mod should be disabled when using the &quot;optterrain&quot; command.
@@ -35,6 +40,7 @@ Updated for patch: 0.203.11
 [*]This mod does not prevent cheating or any kind of client manipulation.
 [*]While this mod is quite light on complexity, as with most mods it&#39;s possible future Valheim patches will break the mod in unexpected ways. We recommend you back up your characters and worlds and/or consider disabling this mod anytime a new game patch is released.
 [/list]
+
 [b][size=5]Why?[/size][/b]
 
 Ordinarily, to keep server resource usage low, the Valheim server will hand off simulation of an area to the first client that enters said area. However, if the player in charge of the area has a poor connection all other players in that area will suffer. This mod is an attempt at improving that specific situation at the cost of increased latency for the client which would ordinarily own the area.
@@ -55,3 +61,15 @@ For mod developers interested in maintaining compatibility with Serverside Simul
 [*]Any graphical or hud-related code should probably be behind a [font=monospace]ZNet.instance.IsDedicated()[/font] check, if that code is expected to run on the server.
 [/list]
 [/list]
+
+[b][size=5]Manually compiling[/size][/b]
+
+To manually compile, create a file at [font=monospace]src/Environment.props[/font] with the following content, and change the path to point at your Valheim install.
+[pre][code]&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;Project ToolsVersion=&quot;Current&quot; xmlns=&quot;http://schemas.microsoft.com/developer/msbuild/2003&quot;&gt;
+  &lt;PropertyGroup&gt;
+    &lt;!-- Needs to be your path to the base Valheim folder --&gt;
+    &lt;VALHEIM_DEDI_INSTALL&gt;E:\SteamLibrary\steamapps\common\Valheim dedicated server&lt;/VALHEIM_DEDI_INSTALL&gt;
+  &lt;/PropertyGroup&gt;
+&lt;/Project&gt;
+[/code][/pre]
