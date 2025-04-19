@@ -5,6 +5,7 @@
 
 
 #Core editorconfig formatting - indentation
+end_of_line = lf
 
 #use hard tabs for indentation
 indent_style = tab
