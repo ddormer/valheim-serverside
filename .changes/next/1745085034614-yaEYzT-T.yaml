@@ -1,0 +1,5 @@
+type: bugfix
+section: null
+issues: {}
+feature_flags: []
+description: "Fix null references to  and "
