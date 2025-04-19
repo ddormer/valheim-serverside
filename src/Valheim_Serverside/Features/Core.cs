@@ -1,4 +1,4 @@
-﻿using FeaturesLib;
+using FeaturesLib;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -395,6 +395,42 @@ namespace Valheim_Serverside.Features
 						ServersidePlugin.logger.LogDebug($"RequestRespons: Setting ship's owner to {rpcData.m_targetPeerID}");
 						zdo.SetOwner(rpcData.m_targetPeerID);
 					}
+				}
+			}
+		}
+
+		[HarmonyPatch(typeof(Humanoid), "UpdateAttack")]
+		public static class Humanoid_UpdateAttack_Patch
+		/*
+			Remove the `m_currentAttack` from the Humanoid if it doesn't have a character instance.
+			
+			The underlying reason for an `Attack` instance not to have `m_character` set
+			is currently not known, and requires further investigation.
+		 */
+		{
+			static void Prefix(ref Humanoid __instance)
+			{
+				if (__instance.m_currentAttack != null && __instance.m_currentAttack.m_character == null)
+				{
+					__instance.m_currentAttack = null;
+				}
+			}
+		}
+
+		[HarmonyPatch(typeof(WearNTear), "UpdateSupport")]
+		public static class WearNTear_UpdateSupport_Patch
+		/*
+			Call `SetupColliders` if `WearNTear.m_bounds` is not set but `WearNTear.m_colliders` are set.
+			
+
+			The underlying reason is currently not known, and requires further investigation.
+		 */
+		{
+			static void Prefix(ref WearNTear __instance)
+			{
+				if (__instance.m_colliders != null && __instance.m_bounds == null)
+				{
+					__instance.SetupColliders();
 				}
 			}
 		}
