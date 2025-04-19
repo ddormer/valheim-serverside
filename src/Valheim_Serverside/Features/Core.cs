@@ -417,6 +417,24 @@ namespace Valheim_Serverside.Features
 			}
 		}
 
+		[HarmonyPatch(typeof(WearNTear), "UpdateSupport")]
+		public static class WearNTear_UpdateSupport_Patch
+		/*
+			Call `SetupColliders` if `WearNTear.m_bounds` is not set but `WearNTear.m_colliders` are set.
+			
+
+			The underlying reason is currently not known, and requires further investigation.
+		 */
+		{
+			static void Prefix(ref WearNTear __instance)
+			{
+				if (__instance.m_colliders != null && __instance.m_bounds == null)
+				{
+					__instance.SetupColliders();
+				}
+			}
+		}
+
 		[HarmonyPatch(typeof(Ship), "UpdateOwner")]
 		public static class Ship_UpdateOwner_Patch
 		/*
