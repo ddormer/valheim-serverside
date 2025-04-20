@@ -502,5 +502,21 @@ namespace Valheim_Serverside.Features
 				return false;
 			}
 		}
+
+		[HarmonyPatch(typeof(EffectList), "Create")]
+		public static class EffectList_Create_Patch
+		/*
+			Server code iterating through EffectLists often are doing graphical
+			operations that aren't supposed to happen on the server;
+			by returning an empty array on `Create`, we remove all iterations.
+		 */
+		{
+			static bool Prefix(ref Array __result)
+			{
+				__result = Array.Empty<GameObject>();
+				return false;
+			}
+		}
+
 	}
 }
