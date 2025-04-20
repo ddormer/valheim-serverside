@@ -1,3 +1,16 @@
+## [1.1.8] - 2025-04-20
+
+### Added
+
+- Remove `AudioMan.Update`, reducing future error spam
+
+
+### Fixed
+
+- Fix null references to `WearNTear.m_bounds` and `Humanoid.m_currentAttack.m_character`
+- Fix shield generators and audio log spam
+
+
 ## [1.1.7] - 2024-11-12
 
 ### Added
