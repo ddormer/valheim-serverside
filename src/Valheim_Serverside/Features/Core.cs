@@ -487,5 +487,20 @@ namespace Valheim_Serverside.Features
 				return false;
 			}
 		}
+
+		[HarmonyPatch(typeof(ShieldDomeImageEffect), "GetDomeColor")]
+		public static class ShieldDomeImageEffect_GetDomeColor_Patch
+		/*
+			The original code results in a null reference while trying to create a gradient.
+			We force `GetDomeColor` to return a constant value in favor of patching the
+			larger caller function to remove the reference to `GetDomeColor`.
+		 */
+		{
+			static bool Prefix(ref Color __result)
+			{
+				__result = new Color(1, 1, 1);
+				return false;
+			}
+		}
 	}
 }
