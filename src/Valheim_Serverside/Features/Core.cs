@@ -182,7 +182,7 @@ namespace Valheim_Serverside.Features
 						}
 						else if (
 							(zdoOwner == 0L
-							|| !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.GetOwner()}).GetValue<bool>()
+							|| !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.GetOwner() }).GetValue<bool>()
 							)
 							&& anyPlayerInArea
 						)
@@ -472,6 +472,18 @@ namespace Valheim_Serverside.Features
 						zdo.SetOwner(driverID);
 					}
 				}
+				return false;
+			}
+		}
+
+		[HarmonyPatch(typeof(AudioMan), "Update")]
+		public static class AudioMan_Update_Patch
+		/*
+			Skip `AudioMan.Update` on the server.
+		 */
+		{
+			static bool Prefix()
+			{
 				return false;
 			}
 		}
