@@ -475,5 +475,17 @@ namespace Valheim_Serverside.Features
 				return false;
 			}
 		}
+
+		[HarmonyPatch(typeof(AudioMan), "Update")]
+		public static class AudioMan_Update_Patch
+		/*
+			Skip `AudioMan.Update` on the server.
+		 */
+		{
+			static bool Prefix()
+			{
+				return false;
+			}
+		}
 	}
 }
