@@ -1,3 +1,10 @@
+## [1.1.9] - 2025-05-14
+
+### Fixed
+
+- Fix missing effects (Revert EffectList.Create patch)
+
+
 ## [1.1.8] - 2025-04-20
 
 ### Added
