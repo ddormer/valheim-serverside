@@ -19,6 +19,9 @@ Updated for patch: 0.220.5
  2. Copy plugin DLL into the BepInEx/plugins/ directory on your dedicated server.
  3. You're done! No client-side changes are needed.
 
+
+_It's recommended to also install the mod "BetterNetworking", it works very well with Serverside Simulations._
+
 ### Configuration
 
 - MaxObjectsPerFrame.MaxObjects can be increased to improve the loading times of areas on the server, at the expense of CPU usage.
