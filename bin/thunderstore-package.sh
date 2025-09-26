@@ -14,4 +14,4 @@ cat > manifest.json <<- EOM
 }
 EOM
 
-zip thunderstore-package.zip $GITHUB_WORKSPACE/serverside-simulations-$GITHUB_SHA.dll thunderstore-icon.png manfifest.json README.md CHANGELOG.md
+zip thunderstore-package.zip Serverside_Simulations.dll icon.png manfifest.json README.md CHANGELOG.md
