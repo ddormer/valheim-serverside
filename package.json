@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "commonmark": "^0.29.3",
+    "markdown-to-bbcode": "^0.3.2",
+    "speed-measure-webpack-v5-plugin": "^1.5.2"
+  }
+}

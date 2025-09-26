@@ -1,0 +1,7 @@
+{
+  name: "Serverside Simulations",
+  description: "Run world and monster simulations on a dedicated server.",
+  version_number: "1.1.9",
+  dependencies: ["denikson-BepInExPack_Valheim-5.4.2202"],
+  website_url: "https://github.com/ddormer/valheim-serverside"
+}
