@@ -4,8 +4,7 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
-  
-    
+
 #  workflow_dispatch:
 #    inputs:
 #      build_configuration:
@@ -14,17 +13,18 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2025
     timeout-minutes: 15
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v5.0.0
     - uses: microsoft/setup-msbuild@v1.0.2
-
-    - name: Download Valheim
+    - name: Install DepotDownloader and download Valheim files
       run: |
-        contrib/depotdownloader/DepotDownloader.exe -app 896660 -os windows -filelist .depot-downloader-file-list.txt -dir serverfiles
-        
+        winget install --exact --id SteamRE.DepotDownloader --disable-interactivity --accept-source-agreements --accept-package-agreements
+        $depot = Get-ChildItem -Path $env:LOCALAPPDATA/Microsoft/WinGet -Recurse -Filter "DepotDownloader.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+        & $depot.FullName -app 896660 -os windows -filelist .depot-downloader-file-list.txt -dir serverfiles
+
     - name: build
       env:
         VALHEIM_DEDI_INSTALL: ../../serverfiles
@@ -33,9 +33,7 @@ jobs:
         msbuild /t:Restore,Build -p:Configuration=Release
         
     - name: upload
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v4.6.2
       with:
         name: serverside-simulations-${{ github.sha }}
         path: bin\Release\Serverside_Simulations.dll
-
-      
