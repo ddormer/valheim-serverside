@@ -12,7 +12,7 @@ on:
 #        default: 'Release'
 
 jobs:
-  build:
+  build-dll:
     runs-on: windows-2025
     timeout-minutes: 15
 
@@ -37,3 +37,19 @@ jobs:
       with:
         name: serverside-simulations-${{ github.sha }}
         path: bin\Release\Serverside_Simulations.dll
+  
+  thunderstore-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [build-dll]
+    steps:
+    - uses: actions/checkout@v5.0.0
+    - uses: actions/download-artifact@v5.0.0
+    - name: Build Thunderstore Package
+      run: |
+        ls $GITHUB_WORKSPACE
+        bin/thunderstore-package.sh
+    - uses: actions/upload-artifact@v4.6.2
+      with:
+        name: thunderstore-package-${{ github.sha }}.zip
+        path: thunderstore-package.zip 
