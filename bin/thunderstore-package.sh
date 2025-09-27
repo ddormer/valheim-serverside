@@ -14,4 +14,4 @@ cat > manifest.json <<- EOM
 }
 EOM
 
-zip thunderstore-package.zip Serverside_Simulations.dll icon.png manfifest.json README.md CHANGELOG.md
+zip -e thunderstore-package.zip Serverside_Simulations.dll icon.png manifest.json README.md CHANGELOG.md
