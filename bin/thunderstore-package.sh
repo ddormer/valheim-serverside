@@ -6,7 +6,7 @@ SS_VERSION=$(grep -oP '(?<=\[BepInPlugin\("MVP\.Valheim_Serverside_Simulations",
 
 cat > manifest.json <<- EOM
 {
-  "name": "Serverside Simulations",
+  "name": "Serverside_Simulations",
   "description": "Run world and monster simulations on a dedicated server.",
   "version_number": "$SS_VERSION",
   "dependencies": ["denikson-BepInExPack_Valheim-5.4.2202"],
