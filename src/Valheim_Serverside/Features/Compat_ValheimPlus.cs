@@ -1,7 +1,6 @@
-﻿using FeaturesLib;
-using PatchingLib;
+﻿using BepInEx.Bootstrap;
+using FeaturesLib;
 using HarmonyLib;
-using BepInEx.Bootstrap;
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
@@ -87,12 +86,17 @@ namespace Valheim_Serverside.Features
 			return new CodeMatcher(instructions)
 				// Replace Container.CheckAccess call with Ldc_I4_1 (true)
 				.MatchForward(false,
-					new CodeMatch(OpCodes.Ldloc_S),
+					// The below matcher is commented out and the
+					// `RemoveInstructions` param was set to 3 from 4. The
+					// original problem is that a jump points to this `Ldloc_S`
+					// by label, and removing the instruction prevents the
+					// branch/jump from functioning. Another option would be to copy the label onto the inserted `Ldc_I4_1` later on.
+					// new CodeMatch(OpCodes.Ldloc_S),
 					new CodeMatch(OpCodes.Ldsfld, AccessTools.Field(typeof(Player), nameof(Player.m_localPlayer))),
 					new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Player), nameof(Player.GetPlayerID))),
 					new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Container), "CheckAccess"))
 				)
-				.RemoveInstructions(4)
+				.RemoveInstructions(3)
 				.Insert(new CodeInstruction(OpCodes.Ldc_I4_1))
 
 				// Replace loading checkWard argument with `false` to skip the check
