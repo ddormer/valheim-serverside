@@ -1,4 +1,4 @@
-﻿using FeaturesLib;
+using FeaturesLib;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -85,7 +85,7 @@ namespace Valheim_Serverside.Features
 			{
 				foreach (ZNetPeer peer in ZNet.instance.GetPeers())
 				{
-					Vector2i zone = __instance.GetZone(peer.GetRefPos());
+					Vector2i zone = ZoneSystem.GetZone(peer.GetRefPos());
 					for (int i = zone.y - __instance.m_activeArea; i <= zone.y + __instance.m_activeArea; i++)
 					{
 						for (int j = zone.x - __instance.m_activeArea; j <= zone.x + __instance.m_activeArea; j++)
@@ -157,7 +157,7 @@ namespace Valheim_Serverside.Features
 		{
 			static bool Prefix(ZDOMan __instance, ref Vector3 refPosition, ref long uid, List<ZDO> ___m_tempNearObjects)
 			{
-				Vector2i zone = ZoneSystem.instance.GetZone(refPosition);
+				Vector2i zone = ZoneSystem.GetZone(refPosition);
 				___m_tempNearObjects.Clear();
 
 				__instance.FindSectorObjects(zone, ZoneSystem.instance.m_activeArea, 0, ___m_tempNearObjects, null);
@@ -168,7 +168,7 @@ namespace Valheim_Serverside.Features
 						bool anyPlayerInArea = false;
 						foreach (ZNetPeer peer in ZNet.instance.GetPeers())
 						{
-							if (ZNetScene.InActiveArea(zdo.GetSector(), ZoneSystem.instance.GetZone(peer.GetRefPos())))
+							if (ZNetScene.InActiveArea(zdo.GetSector(), ZoneSystem.GetZone(peer.GetRefPos())))
 							{
 								anyPlayerInArea = true;
 								break;
@@ -367,7 +367,7 @@ namespace Valheim_Serverside.Features
 				__result = true;
 				foreach (ZNetPeer znetPeer in ZNet.instance.GetPeers())
 				{
-					if (!__instance.OutsideActiveArea(point, znetPeer.GetRefPos()))
+					if (!ZNetScene.OutsideActiveArea(point, znetPeer.GetRefPos()))
 					{
 						__result = false;
 					}
@@ -397,6 +397,42 @@ namespace Valheim_Serverside.Features
 						ServersidePlugin.logger.LogDebug($"RequestRespons: Setting ship's owner to {rpcData.m_targetPeerID}");
 						zdo.SetOwner(rpcData.m_targetPeerID);
 					}
+				}
+			}
+		}
+
+		[HarmonyPatch(typeof(Humanoid), "UpdateAttack")]
+		public static class Humanoid_UpdateAttack_Patch
+		/*
+			Remove the `m_currentAttack` from the Humanoid if it doesn't have a character instance.
+			
+			The underlying reason for an `Attack` instance not to have `m_character` set
+			is currently not known, and requires further investigation.
+		 */
+		{
+			static void Prefix(ref Humanoid __instance)
+			{
+				if (__instance.m_currentAttack != null && __instance.m_currentAttack.m_character == null)
+				{
+					__instance.m_currentAttack = null;
+				}
+			}
+		}
+
+		[HarmonyPatch(typeof(WearNTear), "UpdateSupport")]
+		public static class WearNTear_UpdateSupport_Patch
+		/*
+			Call `SetupColliders` if `WearNTear.m_bounds` is not set but `WearNTear.m_colliders` are set.
+			
+
+			The underlying reason is currently not known, and requires further investigation.
+		 */
+		{
+			static void Prefix(ref WearNTear __instance)
+			{
+				if (__instance.m_colliders != null && __instance.m_bounds == null)
+				{
+					__instance.SetupColliders();
 				}
 			}
 		}
@@ -441,5 +477,33 @@ namespace Valheim_Serverside.Features
 				return false;
 			}
 		}
+
+		[HarmonyPatch(typeof(AudioMan), "Update")]
+		public static class AudioMan_Update_Patch
+		/*
+			Skip `AudioMan.Update` on the server.
+		 */
+		{
+			static bool Prefix()
+			{
+				return false;
+			}
+		}
+
+		[HarmonyPatch(typeof(ShieldDomeImageEffect), "GetDomeColor")]
+		public static class ShieldDomeImageEffect_GetDomeColor_Patch
+		/*
+			The original code results in a null reference while trying to create a gradient.
+			We force `GetDomeColor` to return a constant value in favor of patching the
+			larger caller function to remove the reference to `GetDomeColor`.
+		 */
+		{
+			static bool Prefix(ref Color __result)
+			{
+				__result = new Color(1, 1, 1);
+				return false;
+			}
+		}
+
 	}
 }

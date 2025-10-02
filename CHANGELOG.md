@@ -1,3 +1,35 @@
+## [1.1.9] - 2025-05-14
+
+### Fixed
+
+- Fix missing effects (Revert EffectList.Create patch)
+
+
+## [1.1.8] - 2025-04-20
+
+### Added
+
+- Remove `AudioMan.Update`, reducing future error spam
+
+
+### Fixed
+
+- Fix null references to `WearNTear.m_bounds` and `Humanoid.m_currentAttack.m_character`
+- Fix shield generators and audio log spam
+
+
+## [1.1.7] - 2024-11-12
+
+### Added
+
+- Environment.props and bepinex publicizer
+
+
+### Fixed
+
+- Update method references to static, fixing Bog Witch launch issue. Thanks to @bpage-dev
+
+
 ## [1.1.6] - 2023-11-22
 
 ### Fixed

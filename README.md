@@ -2,11 +2,11 @@
 
 [![Build Plugin](https://github.com/ddormer/valheim-serverside/actions/workflows/build-plugin.yml/badge.svg)](https://github.com/ddormer/valheim-serverside/actions/workflows/build-plugin.yml)
 
-![foo](https://github.com/ddormer/valheim-serverside/blob/main/ss-gh.png)
+![banner](https://raw.githubusercontent.com/ddormer/valheim-serverside/refs/heads/main/ss-gh.png)
 
 Run world and monster simulations on a **dedicated server**.
 
-Updated for patch: 0.217.31
+Updated for patch: 0.220.5
 
 ### Features
 - Server simulates world and AI physics.
@@ -19,15 +19,18 @@ Updated for patch: 0.217.31
  2. Copy plugin DLL into the BepInEx/plugins/ directory on your dedicated server.
  3. You're done! No client-side changes are needed.
 
+
+_It's recommended to also install the mod "BetterNetworking", it works very well with Serverside Simulations._
+
 ### Configuration
 
 - MaxObjectsPerFrame.MaxObjects can be increased to improve the loading times of areas on the server, at the expense of CPU usage.
 
 ### Caveats
 
-- The mod dramatically increases server resource usage and may lead to a poor gameplay experience.
-- The mod should be disabled when using the "optterrain" command. 
 - Only runs on dedicated servers.
+- The mod dramatically increases server resource usage and running it on a weak CPU or limited RAM may lead to a poor gameplay experience.
+- The mod should be disabled when using the "optterrain" command. 
 - This mod does not prevent cheating or any kind of client manipulation.
 - While this mod is quite light on complexity, as with most mods it's possible future Valheim patches will break the mod in unexpected ways. We recommend you back up your characters and worlds and/or consider disabling this mod anytime a new game patch is released.
 

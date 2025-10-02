@@ -4,8 +4,7 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
-  
-    
+
 #  workflow_dispatch:
 #    inputs:
 #      build_configuration:
@@ -13,19 +12,19 @@ on:
 #        default: 'Release'
 
 jobs:
-  build:
-    runs-on: windows-latest
+  build-dll:
+    runs-on: windows-2025
     timeout-minutes: 15
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v5.0.0
     - uses: microsoft/setup-msbuild@v1.0.2
-    - uses: actions/download-artifact@v2
-    
-    - name: Download Valheim
+    - name: Install DepotDownloader and download Valheim files
       run: |
-        dotnet contrib/depotdownloader-2.5.0/DepotDownloader.dll -app 896660 -os windows -filelist .depot-downloader-file-list.txt -dir serverfiles
-        
+        winget install --exact --id SteamRE.DepotDownloader --disable-interactivity --accept-source-agreements --accept-package-agreements
+        $depot = Get-ChildItem -Path $env:LOCALAPPDATA/Microsoft/WinGet -Recurse -Filter "DepotDownloader.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+        & $depot.FullName -app 896660 -os windows -filelist .depot-downloader-file-list.txt -dir serverfiles
+
     - name: build
       env:
         VALHEIM_DEDI_INSTALL: ../../serverfiles
@@ -34,9 +33,23 @@ jobs:
         msbuild /t:Restore,Build -p:Configuration=Release
         
     - name: upload
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4.6.2
       with:
         name: serverside-simulations-${{ github.sha }}
         path: bin\Release\Serverside_Simulations.dll
-
-      
+  
+  thunderstore-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [build-dll]
+    steps:
+    - uses: actions/checkout@v5.0.0
+    - uses: actions/download-artifact@v5.0.0
+    - name: Build Thunderstore Package
+      run: |
+        ls $GITHUB_WORKSPACE
+        bin/thunderstore-package.sh
+    - uses: actions/upload-artifact@v4.6.2
+      with:
+        name: thunderstore-package-${{ github.sha }}.zip
+        path: thunderstore-package.zip 
