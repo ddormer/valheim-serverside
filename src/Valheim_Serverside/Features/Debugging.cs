@@ -55,7 +55,7 @@ namespace Valheim_Serverside.Features
 						m_tempCurrentDistantObjects.Clear();
 						foreach (ZNetPeer znetPeer in ZNet.instance.GetConnectedPeers())
 						{
-							Vector2i zone = ZoneSystem.instance.GetZone(znetPeer.GetRefPos());
+							Vector2i zone = ZoneSystem.GetZone(znetPeer.GetRefPos());
 							ZDOMan.instance.FindSectorObjects(zone, ZoneSystem.instance.m_activeArea, ZoneSystem.instance.m_activeDistantArea, m_tempCurrentObjects, m_tempCurrentDistantObjects);
 						}
 
