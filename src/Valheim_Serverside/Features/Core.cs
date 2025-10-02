@@ -184,7 +184,7 @@ namespace Valheim_Serverside.Features
 						}
 						else if (
 							(zdoOwner == 0L
-							|| __instance.IsInPeerActiveArea(zdo.GetSector(), zdo.GetOwner())
+							|| !__instance.IsInPeerActiveArea(zdo.GetSector(), zdo.GetOwner())
 							)
 							&& anyPlayerInArea
 						)
