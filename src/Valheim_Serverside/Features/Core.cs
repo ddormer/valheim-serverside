@@ -75,6 +75,64 @@ namespace Valheim_Serverside.Features
 			}
 		}
 
+		[HarmonyPatch(typeof(ZNetScene), nameof(ZNetScene.CreateObjectsSorted))]
+		public class CreateObjectsSorted_Patch
+		/*
+			Modify original function to sort ZDOs distance to nearest peer instead of distance to
+			`ZNet.instance.GetReferencePosition()` which makes no sense on a dedicated server.
+		*/
+		{
+			private static bool Prefix(ZNetScene __instance, List<ZDO> currentNearObjects, int maxCreatedPerFrame, ref int created)
+			{
+				// <ORIGINAL>
+				if (!ZoneSystem.instance.IsActiveAreaLoaded())
+				{
+					return false;
+				}
+				__instance.m_tempCurrentObjects2.Clear();
+				//Vector3 referencePosition = ZNet.instance.GetReferencePosition();
+				// </ORIGINAL>
+
+				// <MODIFIED>
+				IEnumerable<Vector3> peerPositions = ZNet.instance.GetConnectedPeers().Select((peer) => peer.GetRefPos());
+				foreach (ZDO zdo in currentNearObjects)
+				{
+					if (!zdo.Created)
+					{
+						Vector3 zdoPos = zdo.GetPosition();
+						zdo.m_tempSortValue = peerPositions.Select((peerPos) => Utils.DistanceSqr(peerPos, zdoPos)).Min();
+						__instance.m_tempCurrentObjects2.Add(zdo);
+					}
+				}
+				// </MODIFIED>
+
+				// <ORIGINAL>
+				int num = Mathf.Max(__instance.m_tempCurrentObjects2.Count / 100, maxCreatedPerFrame);
+				__instance.m_tempCurrentObjects2.Sort(new Comparison<ZDO>(ZNetScene.ZDOCompare));
+				foreach (ZDO zdo2 in __instance.m_tempCurrentObjects2)
+				{
+					if (__instance.CreateObject(zdo2) != null)
+					{
+						created++;
+						if (created > num)
+						{
+							break;
+						}
+					}
+					else if (ZNet.instance.IsServer())
+					{
+						zdo2.SetOwner(ZDOMan.GetSessionID());
+						string str = "Destroyed invalid predab ZDO:";
+						ZDOID uid = zdo2.m_uid;
+						ZLog.Log(str + uid.ToString());
+						ZDOMan.instance.DestroyZDO(zdo2);
+					}
+				}
+				// </ORIGINAL>
+				return false;
+			}
+		}
+
 		[HarmonyPatch(typeof(ZoneSystem), "IsActiveAreaLoaded")]
 		public static class ZoneSystem_IsActiveAreaLoaded_Patch
 		{
