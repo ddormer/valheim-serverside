@@ -2,7 +2,7 @@
 
 [![Build Plugin](https://github.com/ddormer/valheim-serverside/actions/workflows/build-plugin.yml/badge.svg)](https://github.com/ddormer/valheim-serverside/actions/workflows/build-plugin.yml)
 
-![foo](https://github.com/ddormer/valheim-serverside/blob/main/ss-gh.png)
+![banner](https://raw.githubusercontent.com/ddormer/valheim-serverside/refs/heads/main/ss-gh.png)
 
 Run world and monster simulations on a **dedicated server**.
 
