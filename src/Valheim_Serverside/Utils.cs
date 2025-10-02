@@ -58,7 +58,7 @@ namespace Valheim_Serverside
 		{
 			foreach (ZNetPeer peer in ZNet.instance.GetPeers())
 			{
-				Vector2i sector = ZoneSystem.instance.GetZone(peer.GetRefPos());
+				Vector2i sector = ZoneSystem.GetZone(peer.GetRefPos());
 				FindSectorsSurrounding(sector, area, distantArea, nearbySectors, distantSectors);
 			}
 			nearbySectors = nearbySectors.Distinct().ToList();
