@@ -29,7 +29,7 @@ _It's recommended to also install the mod "BetterNetworking", it works very well
 ### Caveats
 
 - Only runs on dedicated servers.
-- The mod dramatically increases server resource usage and running it on a weak CPU may lead to a poor gameplay experience.
+- The mod dramatically increases server resource usage and running it on a weak CPU or limited RAM may lead to a poor gameplay experience.
 - The mod should be disabled when using the "optterrain" command. 
 - This mod does not prevent cheating or any kind of client manipulation.
 - While this mod is quite light on complexity, as with most mods it's possible future Valheim patches will break the mod in unexpected ways. We recommend you back up your characters and worlds and/or consider disabling this mod anytime a new game patch is released.
