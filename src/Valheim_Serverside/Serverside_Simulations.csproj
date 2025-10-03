@@ -95,6 +95,7 @@
   <ItemGroup>
     <Compile Include="Features\Compat_ValheimPlus.cs" />
     <Compile Include="Features\Core.cs" />
+    <Compile Include="Features\ZDOSortOptimize.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Patching.cs" />
     <Compile Include="Features\MaxObjectsPerFrame.cs" />
