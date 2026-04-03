@@ -40,8 +40,8 @@ namespace Valheim_Serverside.Features
 
 			Creates and destroys ZDOs by finding all objects in each peer area.
 
-			Some object overlap can happen if peers are close to each other, the objects are
-			deduplicated by using a HashSet, see `List.Distinct`.
+			Some object overlap can happen if peers are close to each other: we find all active areas (sectors)
+			and deduplicate using HashSets.
 
 			This method originally works only with objects surrounding `ZNet.GetReferencePosition()` which returns some
 			made-up nonsense on a dedicated server.
@@ -57,20 +57,23 @@ namespace Valheim_Serverside.Features
 						   frame number.
 		*/
 		{
-			private static bool Prefix(ZNetScene __instance)
-			{
-				List<ZDO> m_tempCurrentObjects = new List<ZDO>();
-				List<ZDO> m_tempCurrentDistantObjects = new List<ZDO>();
-				foreach (ZNetPeer znetPeer in ZNet.instance.GetConnectedPeers())
-				{
-					Vector2i zone = ZoneSystem.GetZone(znetPeer.GetRefPos());
-					ZDOMan.instance.FindSectorObjects(zone, ZoneSystem.instance.m_activeArea, ZoneSystem.instance.m_activeDistantArea, m_tempCurrentObjects, m_tempCurrentDistantObjects);
-				}
+			private static readonly List<Vector2i> m_tempNearSectors = new List<Vector2i>();
+			private static readonly List<Vector2i> m_tempDistantSectors = new List<Vector2i>();
 
-				m_tempCurrentDistantObjects = m_tempCurrentDistantObjects.Distinct().ToList();
-				m_tempCurrentObjects = m_tempCurrentObjects.Distinct().ToList();
-				Traverse.Create(__instance).Method("CreateObjects", m_tempCurrentObjects, m_tempCurrentDistantObjects).GetValue();
-				Traverse.Create(__instance).Method("RemoveObjects", m_tempCurrentObjects, m_tempCurrentDistantObjects).GetValue();
+			private static bool Prefix(ZNetScene __instance, ref List<ZDO> ___m_tempCurrentObjects, ref List<ZDO> ___m_tempCurrentDistantObjects)
+			{
+				m_tempNearSectors.Clear();
+				m_tempDistantSectors.Clear();
+				___m_tempCurrentObjects.Clear();
+				___m_tempCurrentDistantObjects.Clear();
+
+				Utilities.FindActiveSectors(ZoneSystem.instance.m_activeArea, ZoneSystem.instance.m_activeDistantArea, m_tempNearSectors, m_tempDistantSectors);
+				Utilities.FindObjectsInSectors(m_tempNearSectors, ___m_tempCurrentObjects);
+				Utilities.FindDistantObjectsInSectors(m_tempDistantSectors, ___m_tempCurrentDistantObjects);
+
+				__instance.CreateObjects(___m_tempCurrentObjects, ___m_tempCurrentDistantObjects);
+				__instance.RemoveObjects(___m_tempCurrentObjects, ___m_tempCurrentDistantObjects);
+
 				return false;
 			}
 		}
@@ -126,15 +129,15 @@ namespace Valheim_Serverside.Features
 				{
 					___m_updateTimer = 0f;
 					// original flag line removed, as well as the check for it as it always returns `false` on the server.
-					//bool flag = Traverse.Create(__instance).Method("CreateLocalZones", ZNet.instance.GetReferencePosition()).GetValue<bool>();
-					Traverse.Create(__instance).Method("UpdateTTL", 0.1f).GetValue();
+					//bool flag = __instance.CreateLocalZones(ZNet.instance.GetReferencePosition());
+					__instance.UpdateTTL(0.1f);
 					if (ZNet.instance.IsServer()) // && !flag)
 					{
-						//Traverse.Create(__instance).Method("CreateGhostZones", ZNet.instance.GetReferencePosition()).GetValue();
+						//__instance.CreateGhostZones(ZNet.instance.GetReferencePosition());
 						//UnityEngine.Debug.Log(String.Concat(new object[] { "CreateLocalZones for", refPoint.x, " ", refPoint.y, " ", refPoint.z }));
 						foreach (ZNetPeer znetPeer in ZNet.instance.GetPeers())
 						{
-							Traverse.Create(__instance).Method("CreateLocalZones", znetPeer.GetRefPos()).GetValue();
+							__instance.CreateLocalZones(znetPeer.GetRefPos());
 						}
 					}
 				}
@@ -152,14 +155,13 @@ namespace Valheim_Serverside.Features
 			If ZDO is no longer near the peer, release ownership. If no owner set, change ownership to said peer.
 		*/
 		{
-			static bool Prefix(ZDOMan __instance, ref Vector3 refPosition, ref long uid)
+			static bool Prefix(ZDOMan __instance, ref Vector3 refPosition, ref long uid, List<ZDO> ___m_tempNearObjects)
 			{
 				Vector2i zone = ZoneSystem.GetZone(refPosition);
-				List<ZDO> m_tempNearObjects = Traverse.Create(__instance).Field("m_tempNearObjects").GetValue<List<ZDO>>();
-				m_tempNearObjects.Clear();
+				___m_tempNearObjects.Clear();
 
-				__instance.FindSectorObjects(zone, ZoneSystem.instance.m_activeArea, 0, m_tempNearObjects, null);
-				foreach (ZDO zdo in m_tempNearObjects)
+				__instance.FindSectorObjects(zone, ZoneSystem.instance.m_activeArea, 0, ___m_tempNearObjects, null);
+				foreach (ZDO zdo in ___m_tempNearObjects)
 				{
 					if (zdo.Persistent)
 					{
@@ -182,7 +184,7 @@ namespace Valheim_Serverside.Features
 						}
 						else if (
 							(zdoOwner == 0L
-							|| !new Traverse(__instance).Method("IsInPeerActiveArea", new object[] { zdo.GetSector(), zdo.GetOwner() }).GetValue<bool>()
+							|| !__instance.IsInPeerActiveArea(zdo.GetSector(), zdo.GetOwner())
 							)
 							&& anyPlayerInArea
 						)
@@ -291,19 +293,19 @@ namespace Valheim_Serverside.Features
 			Return spawners if there are nearby players in the event area.
 		*/
 		{
-			if (Traverse.Create(instance).Field("m_activeEvent").GetValue<RandomEvent>() == null)
+			if (instance.m_activeEvent == null)
 			{
 				return null;
 			}
 
-			ZNetView spawnSystem_m_nview = Traverse.Create(spawnSystem).Field("m_nview").GetValue<ZNetView>();
-			RandomEvent randomEvent = Traverse.Create(instance).Field("m_randomEvent").GetValue<RandomEvent>();
+			ZNetView spawnSystem_m_nview = spawnSystem.m_nview;
+			RandomEvent randomEvent = instance.m_randomEvent;
 
 			foreach (Player player in Player.GetAllPlayers())
 			{
 				if (ZNetScene.InActiveArea(spawnSystem_m_nview.GetZDO().GetSector(), player.transform.position))
 				{
-					if (Traverse.Create(instance).Method("IsInsideRandomEventArea", new Type[] { typeof(RandomEvent), typeof(Vector3) }, new object[] { randomEvent, player.transform.position }).GetValue<bool>())
+					if (instance.IsInsideRandomEventArea(randomEvent, player.transform.position))
 					{
 						return instance.GetCurrentSpawners();
 					}
