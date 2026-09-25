@@ -37,6 +37,7 @@
   </PropertyGroup>
   <Import Project="..\Environment.props" Condition="Exists('..\Environment.props')" />
   <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
     <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.1" PrivateAssets="all" />
     <Reference Include="assembly_utils">
       <HintPath>$(VALHEIM_DEDI_INSTALL)\valheim_server_Data\Managed\assembly_utils.dll</HintPath>
@@ -95,6 +96,7 @@
   <ItemGroup>
     <Compile Include="Features\Compat_ValheimPlus.cs" />
     <Compile Include="Features\Core.cs" />
+    <Compile Include="Features\Fixes.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Patching.cs" />
     <Compile Include="Features\MaxObjectsPerFrame.cs" />
